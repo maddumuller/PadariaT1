@@ -1,0 +1,5 @@
+# Exemplo de configuração de banco de dados PostgreSQL
+
+db.url=jdbc:postgresql://localhost:5432/bdpadaria
+db.user=seu_usuario_aqui
+db.password=sua_senha_aqui
