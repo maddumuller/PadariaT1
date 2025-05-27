@@ -20,9 +20,20 @@ public class DatabaseInitializer {
                         "resgatavel BOOLEAN NOT NULL DEFAULT false" +
                         ");";
 
-
                 stmt.executeUpdate(tabelaProduto);
                 System.out.println("Tabela produto criada com sucesso!");
+
+                String tabelaCliente = "CREATE TABLE IF NOT EXISTS cliente(" +
+                        "id SERIAL PRIMARY KEY," +
+                        "nome VARCHAR(100) NOT NULL," +
+                        "CPF VARCHAR(14) NOT NULL UNIQUE," +
+                        "tELEFONE VARCHAR(15)," +
+                        "quantidade_estoque INT NOT NULL DEFAULT 0," +
+                        "resgatavel BOOLEAN NOT NULL DEFAULT false" +
+                        ");";
+
+                stmt.executeUpdate(tabelaCliente);
+                System.out.println("Tabela cliente criado com sucesso!");
 
             } catch (SQLException e) {
 
