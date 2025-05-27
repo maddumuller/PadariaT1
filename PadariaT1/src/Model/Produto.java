@@ -10,13 +10,47 @@ public class Produto {
     private boolean resgatavel;
     private int custoPontos;
 
-    public Produto(String nome, double preco, String tipo, int quantidadeEstoque, boolean resgatavel, int custoPontos) {
+    public Produto() {
+
+    }
+    public void setNome(String nome) {
         this.nome = nome;
+    }
+    public String getNome() {
+        return nome;
+    }
+    public void setPreco(double preco) {
         this.preco = preco;
+    }
+    public double getPreco() {
+        return preco;
+    }
+    public void setTipo(String tipo) {
         this.tipo = tipo;
+    }
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setQuantidadeEstoque(int quantidadeEstoque) {
         this.quantidadeEstoque = quantidadeEstoque;
+    }
+    public int getQuantidadeEstoque() {
+        return quantidadeEstoque;
+    }
+
+    public void setResgatavel(boolean resgatavel) {
         this.resgatavel = resgatavel;
+    }
+    public boolean getResgatavel() {
+        return resgatavel;
+    }
+
+    public void setCustoPontos(int custoPontos) {
         this.custoPontos = custoPontos;
+    }
+    public int getCustoPontos() {
+        return custoPontos;
     }
 
     public void adicionarEstoque(int qtd) {

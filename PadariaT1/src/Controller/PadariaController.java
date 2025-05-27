@@ -21,7 +21,7 @@ public class PadariaController {
     }
 
     public String cadastrarProduto(String nome, double preco, String tipo, int quantidadeEstoque, boolean resgatavel, int custoPontos) {
-        Produto produto = new Produto(nome, preco, tipo, quantidadeEstoque, resgatavel, custoPontos);
+        Produto produto = new Produto();
         padaria.getProdutos().add(produto);
         return "Produto cadastrado com sucesso: " + nome;
     }
