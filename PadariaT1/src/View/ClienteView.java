@@ -2,14 +2,16 @@ package View;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-//Me falem oque vc acharam das view
+import Controller.ClienteController;
+import Controller.ProdutoController;
 
 
 public class ClienteView extends JFrame {
     private JTextField nomeField, cpfField, telefoneField, pontosField;
     private JButton salvarButton, limparButton;
+    private ClienteController controller;
 
     public ClienteView() {
         setTitle("Cadastro de Cliente");
@@ -55,6 +57,29 @@ public class ClienteView extends JFrame {
         cpfField.setText("");
         telefoneField.setText("");
     }
+
+    public void actionPerformed(ActionEvent e) {
+        try {
+            String nome = nomeField.getText();
+            String cpf = cpfField.getText();
+            String telefone = telefoneField.getText();
+            int pontos = Integer.parseInt(pontosField.getText());
+
+            controller.cadastrarCliente(nome,cpf,telefone, pontos);
+            JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
+
+            // Limpar os campos
+            nomeField.setText("");
+            cpfField.setText("");
+            telefoneField.setText("");
+            pontosField.setText("");
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Erro ao cadastrar: " + ex.getMessage());
+        }
+
+};
+
 
     public void addSalvarListener(ActionListener listener) {
         salvarButton.addActionListener(listener);

@@ -11,6 +11,7 @@ public class ProdutoController {
         this.produtoDAO = produtoDAO;
     }
 
+
     public void cadastrarProduto(String nome, double preco, String tipo, int quantidadeEstoque, boolean resgatavel, int custoPontos) throws SQLException {
         Produto produto = new Produto();
         produto.setNome(nome);

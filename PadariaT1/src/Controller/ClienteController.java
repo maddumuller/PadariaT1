@@ -15,7 +15,7 @@ public class ClienteController {
         this.conn = conn;
     }
 
-    public String cadastrarCliente(String nome, String cpf, String telefone) {
+    public String cadastrarCliente(String nome, String cpf, String telefone, int pontos) {
         try {
             Cliente cliente = new Cliente(nome, cpf, telefone);
             cliente.cadastrarCliente(conn);

@@ -1,6 +1,8 @@
 package View;
 
 import Controller.ProdutoController;
+import Dao.ProdutoDao;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -90,5 +92,13 @@ import java.awt.event.ActionListener;
                 }
             });
         }
-        }
+    }
+
+//        public static void main(String[] args) {
+//            ProdutoController controller = new ProdutoController();
+//            new ProdutoView(controller).setVisible(true);
+//        }
+//    retirar chave de cima caso for utilizar esta classe }
+
+
 

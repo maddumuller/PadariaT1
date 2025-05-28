@@ -3,7 +3,6 @@ package Dao;
 import Model.Cliente;
 import java.sql.*;
 
-//Classes DAO sao presentes as clases para manipular os dados do BD
 
 public class ClienteDao {
     private Connection connection;
