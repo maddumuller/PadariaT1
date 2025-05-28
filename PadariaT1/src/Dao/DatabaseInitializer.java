@@ -18,7 +18,9 @@ public class DatabaseInitializer {
                         "tipo VARCHAR(50) NOT NULL," +
                         "quantidade_estoque INT NOT NULL DEFAULT 0," +
                         "resgatavel BOOLEAN NOT NULL DEFAULT false" +
+                        "custo_pontos INT NOT NULL DEFAULT 0;"+
                         ");";
+
 
                 stmt.executeUpdate(tabelaProduto);
                 System.out.println("Tabela produto criada com sucesso!");
@@ -38,7 +40,7 @@ public class DatabaseInitializer {
                 String tabelaVenda = "CREATE TABLE IF NOT EXISTS venda("+
                         "id SERIAL PRIMARY KEY,"+
                         "cliente_id INT,"+
-                        "data_venda TIMESTAMP DEFAULT CURRENT,"+
+                        "data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"+
                         "total_valor NUMERIC(10,2) NOT NULL,"+
                         "pontos_gerados INT NOT NULL,"+
                         "FOREIGN KEY (cliente_id) REFERENCES Cliente(id)"+");";
@@ -66,7 +68,7 @@ public class DatabaseInitializer {
                         "pontos_utilizados INT NOT NULL,"+
                         "data_troca TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"+
                         "FOREIGN KEY (cliente_id) REFERENCES Cliente(id),"+
-                        "FOREIGN KEY (produto_id) REFERENCES Produto(id)+"+");";
+                        "FOREIGN KEY (produto_id) REFERENCES Produto(id)"+");";
 
                 stmt.executeUpdate(tabelaPontos);
                 System.out.println("Tabela pontos criado com sucesso!");

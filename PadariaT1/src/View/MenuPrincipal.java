@@ -25,7 +25,7 @@ public class MenuPrincipal extends JFrame {
         setLayout(null);
 
         try {
-            // Aqui, você inicializa a conexão e os objetos no nível do objeto (atributos)
+
             this.conexao = ConexaoBD.conectar();
             ProdutoDao produtoDao = new ProdutoDao(conexao);
             this.produtoController = new ProdutoController(produtoDao);
