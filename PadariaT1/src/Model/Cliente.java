@@ -55,6 +55,31 @@ public class Cliente {
             pstmt.executeUpdate();
         }
     }
+    public void cadastrarCliente(Connection conn) throws SQLException {
+        String sql = "INSERT INTO clientes (nome, cpf, telefone, pontos) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, this.nome);
+            pstmt.setString(2, this.cpf);
+            pstmt.setString(3, this.telefone);
+            pstmt.setInt(4, this.pontos);
+            pstmt.executeUpdate();
+        }
+    }
+    public static List<Cliente> listarClientes(Connection conn) throws SQLException {
+        List<Cliente> clientes = new ArrayList<>();
+        String sql = "SELECT * FROM clientes";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Cliente cliente = new Cliente(rs.getString("nome"),
+                        rs.getString("cpf"),
+                        rs.getString("telefone"));
+                cliente.pontos = rs.getInt("pontos");
+                clientes.add(cliente);
+            }
+        }
+        return clientes;
+    }
 
     //Aqui tao os gets
     public String getNome() {
