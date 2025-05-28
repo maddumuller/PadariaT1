@@ -30,8 +30,7 @@ public class DatabaseInitializer {
                         "nome VARCHAR(100) NOT NULL," +
                         "CPF VARCHAR(14) NOT NULL UNIQUE," +
                         "tELEFONE VARCHAR(15)," +
-                        "quantidade_estoque INT NOT NULL DEFAULT 0," +
-                        "resgatavel BOOLEAN NOT NULL DEFAULT false" +
+                        "pontos INT NOT NULL DEFAULT 0," +
                         ");";
 
                 stmt.executeUpdate(tabelaCliente);
@@ -84,7 +83,7 @@ public class DatabaseInitializer {
 public static void main(String[] args) {
     System.out.println("Iniciando a verificação/criação das tabelas do banco de dados...");
     inicializador();
-    // O método initialize() já imprime mensagens de sucesso ou erro.
+
 }
 }
 //                System.out.println("Processo de inicialização do banco de dados concluído com êxito.");
