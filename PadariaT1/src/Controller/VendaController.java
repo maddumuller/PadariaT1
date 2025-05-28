@@ -1,6 +1,6 @@
 package Controller;
 
-import Dao.VendaDAO;
+import Dao.VendaDao;
 import Model.Cliente;
 import Model.ProdutoVenda;
 import Model.Venda;
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class VendaController {
-    private final VendaDAO vendaDAO;
+    private final VendaDao vendaDAO;
 
     public VendaController(Connection connection) {
         this.vendaDAO = new VendaDAO(connection);
