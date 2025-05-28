@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Cliente {
+    private int id;
     private String nome;
     private String cpf;
     private String telefone;
@@ -20,6 +21,9 @@ public class Cliente {
         this.cpf = cpf;
         this.telefone = telefone;
         this.pontos = 0;
+    }
+    public Cliente(int id){
+        this.id = id;
     }
     //Metodos
     public void adicionarPontos(double valor) {
@@ -98,4 +102,7 @@ public class Cliente {
         return pontos;
     }
 
+    public int getId() {
+        return id;
+    }
 }

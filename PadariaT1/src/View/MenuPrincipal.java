@@ -1,7 +1,13 @@
 package View;
 
+import Controller.ProdutoController;
+
 import javax.swing.*;
 import java.awt.event.*;
+import Dao.ConexaoBD;
+import Dao.ProdutoDao;
+
+import java.sql.Connection;
 
 public class MenuPrincipal extends JFrame {
 
@@ -9,12 +15,24 @@ public class MenuPrincipal extends JFrame {
     private JButton clienteButton;
     private JButton vendaButton;
     private JButton sairButton;
+    private Connection conexao;
+    private ProdutoController produtoController;
 
     public MenuPrincipal() {
         setTitle("Menu Principal - PadariaT1");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
+
+        try {
+            // Aqui, você inicializa a conexão e os objetos no nível do objeto (atributos)
+            this.conexao = ConexaoBD.conectar();
+            ProdutoDao produtoDao = new ProdutoDao(conexao);
+            this.produtoController = new ProdutoController(produtoDao);
+        } catch (RuntimeException e) {
+            JOptionPane.showMessageDialog(this, "Erro na conexão com o banco: " + e.getMessage());
+            System.exit(1);
+        }
 
         produtoButton = new JButton("Cadastro de Produto");
         produtoButton.setBounds(100, 50, 200, 30);
@@ -35,7 +53,7 @@ public class MenuPrincipal extends JFrame {
         // Ações dos botões
         produtoButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ProdutoView produtoView = new ProdutoView();
+                ProdutoView produtoView = new ProdutoView(produtoController);
                 produtoView.setVisible(true);
             }
         });
@@ -62,6 +80,7 @@ public class MenuPrincipal extends JFrame {
             }
         });
     }
+
 
     public static void main(String[] args) {
         new MenuPrincipal().setVisible(true);

@@ -3,6 +3,7 @@ package Model;
 //Classes model sao presentes apenas a criaçao das entidades(Fazer seguindo os padroes presentes no diagrama)
 
 public class Produto {
+    private int id;
     private String nome;
     private double preco;
     private String tipo;
@@ -96,4 +97,7 @@ public class Produto {
                 nome, preco, tipo, quantidadeEstoque, resgatavel ? "Sim" : "Não", custoPontos);
     }
 
+    public int getId() {
+        return id;
+    }
 }

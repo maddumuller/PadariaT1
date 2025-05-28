@@ -39,7 +39,7 @@ public class PadariaController {
             }
         }
 
-        Venda venda = new Venda(cliente, produtosVenda);
+        Venda venda = new Venda(cliente);
         venda.registrarVenda(cliente, produtosVenda);
         padaria.getVendas().add(venda);
         return "Venda registrada com sucesso! Valor total: " + venda.getValorTotal();

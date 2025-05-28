@@ -6,6 +6,7 @@ import Model.ProdutoVenda;
 import Model.Venda;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,16 +14,18 @@ public class VendaController {
     private final VendaDao vendaDAO;
 
     public VendaController(Connection connection) {
-        this.vendaDAO = new VendaDAO(connection);
+        this.vendaDAO = new VendaDao(connection);
     }
 
     public int cadastrarVenda(Cliente cliente, List<ProdutoVenda> produtos) {
-        Venda venda = new Venda(cliente);
-        venda.setProdutos(produtos);
-        venda.somarValorTotal();
-        venda.setDataVenda(LocalDateTime.now());
-        venda.setPago(false);
-        return vendaDAO.inserir(venda);
+        Venda venda = new Venda();
+        venda.registrarVenda(cliente, produtos);
+        try {
+            return vendaDAO.salvarVenda(venda);
+        } catch (SQLException e) {
+            System.err.println("Erro ao salvar venda: " + e.getMessage());
+            return -1;
+        }
     }
 
     public List<Venda> listarVendas() {
@@ -38,7 +41,11 @@ public class VendaController {
     }
 
     public void marcarVendaComoPaga(int id) {
-        vendaDAO.marcarComoPago(id);
+        Venda venda = vendaDAO.buscarPorId(id);
+        if (venda != null && !venda.isPago()) {
+            venda.marcarComoPago();
+            vendaDAO.atualizar(venda, id); // assume que o método atualiza status, pontos e valorTotal
+        }
     }
 
     public void removerVenda(int id) {
