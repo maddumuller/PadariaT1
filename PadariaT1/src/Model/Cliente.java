@@ -20,8 +20,17 @@ public class Cliente {
     public Cliente() {
     }
 
-    // Construtor completo
+    // Construtor sem id (para novos clientes antes de salvar no banco)
     public Cliente(String nome, String cpf, String telefone, int pontos) {
+        this.nome = nome;
+        this.cpf = cpf;
+        this.telefone = telefone;
+        this.pontos = pontos;
+    }
+
+    // Construtor com id (para clientes vindos do banco)
+    public Cliente(int id, String nome, String cpf, String telefone, int pontos) {
+        this.id = id;
         this.nome = nome;
         this.cpf = cpf;
         this.telefone = telefone;
@@ -54,7 +63,7 @@ public class Cliente {
     public void editarCliente(String nome, String telefone) {
         this.nome = nome;
         this.telefone = telefone;
-        // Atualizar dados no banco de dados
+        // Atualizar dados no banco de dados (se necessário)
     }
 
     public void removerCliente(Connection conn) throws SQLException {
@@ -83,12 +92,12 @@ public class Cliente {
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 Cliente cliente = new Cliente(
+                        rs.getInt("id"),
                         rs.getString("nome"),
                         rs.getString("cpf"),
                         rs.getString("telefone"),
                         rs.getInt("pontos")
                 );
-                cliente.setId(rs.getInt("id")); // Garante que o ID seja atribuído
                 clientes.add(cliente);
             }
         }
@@ -136,10 +145,9 @@ public class Cliente {
     public void setPontos(int pontos) {
         this.pontos = pontos;
     }
+
     @Override
     public String toString() {
         return nome + " - CPF: " + cpf;
     }
-
 }
-

@@ -60,6 +60,7 @@ public class ClienteDao {
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 Cliente c = new Cliente(
+                        rs.getInt("id"),
                         rs.getString("nome"),
                         rs.getString("cpf"),
                         rs.getString("telefone"),
