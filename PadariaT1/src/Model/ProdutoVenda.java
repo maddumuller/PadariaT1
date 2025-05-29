@@ -34,6 +34,11 @@ public class ProdutoVenda {
         return 0.0;
     }
 
+    // Método adicional para compatibilidade
+    public double getSubtotal() {
+        return calcularSubtotal();
+    }
+
     @Override
     public String toString() {
         return "ProdutoVenda{" +

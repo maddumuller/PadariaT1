@@ -1,115 +1,45 @@
 package Model;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Venda {
+    private int id;
     private Cliente cliente;
-    private List<ProdutoVenda> produtos;
-    private boolean pago;
+    private boolean isPago;
     private double valorTotal;
     private LocalDateTime dataVenda;
+    private List<ProdutoVenda> produtos;
 
+    // Construtor padrão
     public Venda() {
-        this.produtos = new ArrayList<>();
-        this.pago = false;
-        this.valorTotal = 0.0;
-        this.dataVenda = LocalDateTime.now();
     }
 
+    // Construtor com cliente
     public Venda(Cliente cliente) {
-        this();
         this.cliente = cliente;
-    }
-
-    /**
-     * Registra a venda com cliente e produtos, atualiza valores e estoque.
-     */
-    public void registrarVenda(Cliente cliente, List<ProdutoVenda> produtos) {
-        if (cliente == null || produtos == null || produtos.isEmpty()) {
-            throw new IllegalArgumentException("Cliente e lista de produtos não podem ser nulos ou vazios.");
-        }
-
-        this.cliente = cliente;
-        this.produtos = new ArrayList<>(produtos);
+        this.isPago = false;
         this.dataVenda = LocalDateTime.now();
-        somarValorTotal();
-        atualizarEstoqueProdutos();
     }
 
-    /**
-     * Soma o valor total da venda com base nos produtos e quantidades.
-     */
+    // Método para somar valor total dos produtos
     public void somarValorTotal() {
-        this.valorTotal = produtos.stream()
-                .mapToDouble(ProdutoVenda::calcularSubtotal)
-                .sum();
-    }
-
-    /**
-     * Atualiza o estoque de todos os produtos vendidos.
-     */
-    public void atualizarEstoqueProdutos() {
-        for (ProdutoVenda produtoVenda : produtos) {
-            Produto produto = produtoVenda.getProduto();
-            int quantidadeVendida = produtoVenda.getQuantidade();
-            if (produto.getQuantidadeEstoque() >= quantidadeVendida) {
-                produto.removerEstoque(quantidadeVendida);
-            } else {
-                throw new IllegalStateException(String.format(
-                        "Estoque insuficiente para o produto: %s. Disponível: %d, Solicitado: %d",
-                        produto.getNome(), produto.getQuantidadeEstoque(), quantidadeVendida));
+        this.valorTotal = 0.0;
+        if (produtos != null) {
+            for (ProdutoVenda produtoVenda : produtos) {
+                this.valorTotal += produtoVenda.getSubtotal();
             }
         }
-    }
-
-    /**
-     * Acumula pontos no cliente apenas se a venda foi paga.
-     */
-    public void acumularPontos() {
-        if (cliente != null && pago) {
-            int pontosGanhos = (int) (valorTotal / 10.0);
-            cliente.adicionarPontos(pontosGanhos);
-        }
-    }
-
-    /**
-     * Marca a venda como paga e acumula pontos.
-     */
-    public void marcarComoPago() {
-        this.pago = true;
-        acumularPontos();
-    }
-
-    /**
-     * Adiciona um produto à venda.
-     */
-    public void adicionarProduto(Produto produto, int quantidade) {
-        Objects.requireNonNull(produto, "Produto não pode ser nulo.");
-        if (quantidade <= 0) throw new IllegalArgumentException("Quantidade inválida.");
-
-        for (ProdutoVenda produtoVenda : produtos) {
-            if (produtoVenda.getProduto().equals(produto)) {
-                produtoVenda.setQuantidade(produtoVenda.getQuantidade() + quantidade);
-                somarValorTotal();
-                return;
-            }
-        }
-        produtos.add(new ProdutoVenda(produto, quantidade));
-        somarValorTotal();
-    }
-
-    /**
-     * Remove um produto da venda.
-     */
-    public void removerProduto(Produto produto) {
-        produtos.removeIf(pv -> pv.getProduto().equals(produto));
-        somarValorTotal();
     }
 
     // Getters e Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public Cliente getCliente() {
         return cliente;
@@ -119,26 +49,20 @@ public class Venda {
         this.cliente = cliente;
     }
 
-    public List<ProdutoVenda> getProdutos() {
-        return new ArrayList<>(produtos);
-    }
-
-    public void setProdutos(List<ProdutoVenda> produtos) {
-        this.produtos = new ArrayList<>(Objects.requireNonNull(produtos));
-        somarValorTotal();
-    }
-
     public boolean isPago() {
-        return pago;
+        return isPago;
     }
 
     public void setPago(boolean pago) {
-        this.pago = pago;
-        if (pago) acumularPontos();
+        isPago = pago;
     }
 
     public double getValorTotal() {
         return valorTotal;
+    }
+
+    public void setValorTotal(double valorTotal) {
+        this.valorTotal = valorTotal;
     }
 
     public LocalDateTime getDataVenda() {
@@ -149,22 +73,30 @@ public class Venda {
         this.dataVenda = dataVenda;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== VENDA ===\n")
-                .append("Cliente: ").append(cliente != null ? cliente.getNome() : "N/A").append("\n")
-                .append("Data: ").append(dataVenda).append("\n")
-                .append("Produtos:\n");
-        for (ProdutoVenda pv : produtos) {
-            sb.append("  - ").append(pv.getProduto().getNome())
-                    .append(" x").append(pv.getQuantidade())
-                    .append(" = R$ ").append(String.format("%.2f", pv.calcularSubtotal()))
-                    .append("\n");
+    public List<ProdutoVenda> getProdutos() {
+        return produtos;
+    }
+
+    public void setProdutos(List<ProdutoVenda> produtos) {
+        this.produtos = produtos;
+    }
+
+    // Método para visualizar venda
+    public void visualizarVenda() {
+        System.out.println("=== VENDA ===");
+        System.out.println("ID: " + id);
+        System.out.println("Cliente: " + (cliente != null ? cliente.getNome() : "N/A"));
+        System.out.println("Data: " + dataVenda);
+        System.out.println("Valor Total: R$ " + String.format("%.2f", valorTotal));
+        System.out.println("Status: " + (isPago ? "PAGO" : "PENDENTE"));
+
+        if (produtos != null && !produtos.isEmpty()) {
+            System.out.println("\n=== PRODUTOS ===");
+            for (ProdutoVenda pv : produtos) {
+                System.out.println("- " + pv.getProduto().getNome() +
+                        " | Qtd: " + pv.getQuantidade() +
+                        " | Subtotal: R$ " + String.format("%.2f", pv.getSubtotal()));
+            }
         }
-        sb.append("Valor Total: R$ ").append(String.format("%.2f", valorTotal)).append("\n")
-                .append("Status: ").append(pago ? "PAGO" : "PENDENTE").append("\n");
-        return sb.toString();
     }
 }
-

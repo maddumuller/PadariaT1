@@ -1,6 +1,6 @@
 package Model;
 
-//Classes model sao presentes apenas a criaçao das entidades(Fazer seguindo os padroes presentes no diagrama)
+// Classes model sao presentes apenas a criacao das entidades (Fazer seguindo os padroes presentes no diagrama)
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,7 +15,12 @@ public class Cliente {
     private String cpf;
     private String telefone;
     private int pontos;
-    //Construtor
+
+    // Construtor vazio necessário
+    public Cliente() {
+    }
+
+    // Construtor completo
     public Cliente(String nome, String cpf, String telefone, int pontos) {
         this.nome = nome;
         this.cpf = cpf;
@@ -23,11 +28,12 @@ public class Cliente {
         this.pontos = pontos;
     }
 
-    //Metodos
+    // Metodos de negócio
     public void adicionarPontos(double valor) {
         int pontosGanhos = (int) (valor / 10);
         this.pontos += pontosGanhos;
     }
+
     public void trocarPontos(Produto produto) {
         if (!produto.isResgatavel()) {
             throw new IllegalStateException("Produto não é resgatável.");
@@ -37,6 +43,7 @@ public class Cliente {
         }
         this.pontos -= produto.getCustoPontos();
     }
+
     public void visualizarCliente() {
         System.out.println("Nome: " + nome);
         System.out.println("CPF: " + cpf);
@@ -57,6 +64,7 @@ public class Cliente {
             pstmt.executeUpdate();
         }
     }
+
     public void cadastrarCliente(Connection conn) throws SQLException {
         String sql = "INSERT INTO cliente (nome, cpf, telefone, pontos) VALUES (?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -67,24 +75,31 @@ public class Cliente {
             pstmt.executeUpdate();
         }
     }
+
     public static List<Cliente> listarClientes(Connection conn) throws SQLException {
-        List<Cliente> cliente = new ArrayList<>();
+        List<Cliente> clientes = new ArrayList<>();
         String sql = "SELECT * FROM cliente";
         try (PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                Cliente clientes = new Cliente(
+                Cliente cliente = new Cliente(
                         rs.getString("nome"),
                         rs.getString("cpf"),
                         rs.getString("telefone"),
                         rs.getInt("pontos")
                 );
+                cliente.setId(rs.getInt("id")); // Garante que o ID seja atribuído
+                clientes.add(cliente);
             }
         }
-        return cliente;
+        return clientes;
     }
 
-    //Aqui tao os gets
+    // ===== GETTERS =====
+    public int getId() {
+        return id;
+    }
+
     public String getNome() {
         return nome;
     }
@@ -101,7 +116,24 @@ public class Cliente {
         return pontos;
     }
 
-    public int getId() {
-        return id;
+    // ===== SETTERS =====
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
+    public void setPontos(int pontos) {
+        this.pontos = pontos;
     }
 }

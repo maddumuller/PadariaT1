@@ -1,8 +1,9 @@
 package Dao;
 
+import Model.Venda;
 import Model.Cliente;
 import Model.ProdutoVenda;
-import Model.Venda;
+import Model.Produto;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -10,194 +11,253 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VendaDao {
-    private final Connection connection;
+    private Connection connection;
 
     public VendaDao(Connection connection) {
         this.connection = connection;
     }
 
-    public int salvarVenda(Venda venda) throws SQLException {
-        String insertVendaSQL = "INSERT INTO vendas (cliente_id, data, valor_total, is_pago) VALUES (?, ?, ?, ?) RETURNING id";
-        String insertItemSQL = "INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";
-        String updateEstoqueSQL = "UPDATE produtos SET quantidade_estoque = quantidade_estoque - ? WHERE id = ?";
-        String updatePontosSQL = "UPDATE clientes SET pontos = pontos + ? WHERE id = ?";
-
-        int vendaId = -1;
-
-        try {
-            connection.setAutoCommit(false);
-
-            try (PreparedStatement vendaStmt = connection.prepareStatement(insertVendaSQL)) {
-                vendaStmt.setInt(1, venda.getCliente().getId());
-                vendaStmt.setTimestamp(2, Timestamp.valueOf(venda.getDataVenda()));
-                vendaStmt.setDouble(3, venda.getValorTotal());
-                vendaStmt.setBoolean(4, venda.isPago());
-
-                try (ResultSet rs = vendaStmt.executeQuery()) {
-                    if (rs.next()) {
-                        vendaId = rs.getInt("id");
-                    }
-                }
-            }
-
-            for (ProdutoVenda pv : venda.getProdutos()) {
-                try (PreparedStatement itemStmt = connection.prepareStatement(insertItemSQL)) {
-                    itemStmt.setInt(1, vendaId);
-                    itemStmt.setInt(2, pv.getProduto().getId());
-                    itemStmt.setInt(3, pv.getQuantidade());
-                    itemStmt.setDouble(4, pv.getProduto().getPreco());
-                    itemStmt.executeUpdate();
-                }
-
-                try (PreparedStatement estoqueStmt = connection.prepareStatement(updateEstoqueSQL)) {
-                    estoqueStmt.setInt(1, pv.getQuantidade());
-                    estoqueStmt.setInt(2, pv.getProduto().getId());
-                    estoqueStmt.executeUpdate();
-                }
-            }
-
-            if (venda.isPago()) {
-                int pontos = (int) (venda.getValorTotal() / 10.0);
-                try (PreparedStatement pontosStmt = connection.prepareStatement(updatePontosSQL)) {
-                    pontosStmt.setInt(1, pontos);
-                    pontosStmt.setInt(2, venda.getCliente().getId());
-                    pontosStmt.executeUpdate();
-                }
-            }
-
-            connection.commit();
+    public void criarTabela() {
+        String sql = "CREATE TABLE IF NOT EXISTS venda (" +
+                "id SERIAL PRIMARY KEY," +
+                "cliente_id INTEGER NOT NULL," +
+                "is_pago BOOLEAN DEFAULT FALSE," +
+                "valor_total DECIMAL(10,2) NOT NULL," +
+                "data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                "FOREIGN KEY (cliente_id) REFERENCES cliente(id)" +
+                ")";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.execute();
         } catch (SQLException e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.setAutoCommit(true);
+            throw new RuntimeException(e);
         }
-
-        return vendaId;
     }
 
-    public List<Venda> listarTodas() {
-        List<Venda> vendas = new ArrayList<>();
-        String sql = "SELECT * FROM vendas";
+    public int inserir(Venda venda) {
+        String sql = "INSERT INTO venda (cliente_id, is_pago, valor_total, data_venda) VALUES (?, ?, ?, ?) RETURNING id";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, venda.getCliente().getId());
+            stmt.setBoolean(2, venda.isPago());
+            stmt.setDouble(3, venda.getValorTotal());
+            stmt.setTimestamp(4, Timestamp.valueOf(venda.getDataVenda()));
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                Venda venda = montarVendaBasica(rs);
-                vendas.add(venda);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                int vendaId = rs.getInt(1);
+                inserirProdutosDaVenda(vendaId, venda.getProdutos());
+                return vendaId;
             }
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
-        return vendas;
+        return -1;
     }
 
     public Venda buscarPorId(int id) {
-        String sql = "SELECT * FROM vendas WHERE id = ?";
-
+        String sql = "SELECT v.id, v.cliente_id, v.is_pago, v.valor_total, v.data_venda, " +
+                "c.nome, c.cpf, c.telefone, c.pontos " +
+                "FROM venda v JOIN cliente c ON v.cliente_id = c.id WHERE v.id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return montarVendaBasica(rs);
-                }
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Cliente cliente = new Cliente();
+                cliente.setId(rs.getInt("cliente_id"));
+                cliente.setNome(rs.getString("nome"));
+                cliente.setCpf(rs.getString("cpf"));
+                cliente.setTelefone(rs.getString("telefone"));
+                cliente.setPontos(rs.getInt("pontos"));
+
+                Venda venda = new Venda();
+                venda.setCliente(cliente);
+                venda.setPago(rs.getBoolean("is_pago"));
+                venda.setDataVenda(rs.getTimestamp("data_venda").toLocalDateTime());
+                venda.setProdutos(buscarProdutosDaVenda(rs.getInt("id")));
+                venda.somarValorTotal();
+                return venda;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
         return null;
     }
 
-    public List<Venda> buscarPorCliente(int clienteId) {
+    public List<Venda> listarTodas() {
+        String sql = "SELECT v.id, v.cliente_id, v.is_pago, v.valor_total, v.data_venda, " +
+                "c.nome, c.cpf, c.telefone, c.pontos " +
+                "FROM venda v JOIN cliente c ON v.cliente_id = c.id ORDER BY v.data_venda DESC";
         List<Venda> vendas = new ArrayList<>();
-        String sql = "SELECT * FROM vendas WHERE cliente_id = ?";
-
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, clienteId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    vendas.add(montarVendaBasica(rs));
-                }
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Cliente cliente = new Cliente();
+                cliente.setId(rs.getInt("cliente_id"));
+                cliente.setNome(rs.getString("nome"));
+                cliente.setCpf(rs.getString("cpf"));
+                cliente.setTelefone(rs.getString("telefone"));
+                cliente.setPontos(rs.getInt("pontos"));
+
+                Venda venda = new Venda();
+                venda.setCliente(cliente);
+                venda.setPago(rs.getBoolean("is_pago"));
+                venda.setDataVenda(rs.getTimestamp("data_venda").toLocalDateTime());
+                venda.setProdutos(buscarProdutosDaVenda(rs.getInt("id")));
+                venda.somarValorTotal();
+                vendas.add(venda);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
         return vendas;
     }
 
-    public List<Venda> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
+    public List<Venda> buscarPorCliente(int clienteId) {
+        String sql = "SELECT v.id, v.cliente_id, v.is_pago, v.valor_total, v.data_venda, " +
+                "c.nome, c.cpf, c.telefone, c.pontos " +
+                "FROM venda v JOIN cliente c ON v.cliente_id = c.id " +
+                "WHERE v.cliente_id = ? ORDER BY v.data_venda DESC";
         List<Venda> vendas = new ArrayList<>();
-        String sql = "SELECT * FROM vendas WHERE data BETWEEN ? AND ?";
-
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setTimestamp(1, Timestamp.valueOf(inicio));
-            stmt.setTimestamp(2, Timestamp.valueOf(fim));
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    vendas.add(montarVendaBasica(rs));
-                }
+            stmt.setInt(1, clienteId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Cliente cliente = new Cliente();
+                cliente.setId(rs.getInt("cliente_id"));
+                cliente.setNome(rs.getString("nome"));
+                cliente.setCpf(rs.getString("cpf"));
+                cliente.setTelefone(rs.getString("telefone"));
+                cliente.setPontos(rs.getInt("pontos"));
+
+                Venda venda = new Venda();
+                venda.setCliente(cliente);
+                venda.setPago(rs.getBoolean("is_pago"));
+                venda.setDataVenda(rs.getTimestamp("data_venda").toLocalDateTime());
+                venda.setProdutos(buscarProdutosDaVenda(rs.getInt("id")));
+                venda.somarValorTotal();
+                vendas.add(venda);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
         return vendas;
     }
 
     public void atualizar(Venda venda, int id) {
-        String sql = "UPDATE vendas SET cliente_id = ?, data = ?, valor_total = ?, is_pago = ? WHERE id = ?";
-
+        String sql = "UPDATE venda SET cliente_id = ?, is_pago = ?, valor_total = ? WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, venda.getCliente().getId());
-            stmt.setTimestamp(2, Timestamp.valueOf(venda.getDataVenda()));
+            stmt.setBoolean(2, venda.isPago());
             stmt.setDouble(3, venda.getValorTotal());
-            stmt.setBoolean(4, venda.isPago());
-            stmt.setInt(5, id);
+            stmt.setInt(4, id);
             stmt.executeUpdate();
+            removerProdutosDaVenda(id);
+            inserirProdutosDaVenda(id, venda.getProdutos());
         } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void remover(int id) {
-        String sql = "DELETE FROM vendas WHERE id = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
     public void marcarComoPago(int id) {
-        String sql = "UPDATE vendas SET is_pago = TRUE WHERE id = ?";
-
+        String sql = "UPDATE venda SET is_pago = TRUE WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
-    // Método auxiliar para evitar duplicação de código
-    private Venda montarVendaBasica(ResultSet rs) throws SQLException {
-        Venda venda = new Venda();
-        venda.setDataVenda(rs.getTimestamp("data").toLocalDateTime());
-        venda.setPago(rs.getBoolean("is_pago"));
-        venda.setProdutos(new ArrayList<>());
-        String nome = rs.getString("cliente_nome");
-        String cpf = rs.getString("cliente_cpf");
-        String telefone = rs.getString("cliente_telefone");
-        int pontos = rs.getInt("cliente_pontos");// Idealmente, carregar produtos separados
-        venda.setCliente(new Cliente("nome", "cpf", "telefone", pontos));
-        venda.somarValorTotal(); // ou set diretamente, se armazenado
-        return venda;
+    public void remover(int id) {
+        String sql = "DELETE FROM venda WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Venda> buscarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
+        String sql = "SELECT v.id, v.cliente_id, v.is_pago, v.valor_total, v.data_venda, " +
+                "c.nome, c.cpf, c.telefone, c.pontos " +
+                "FROM venda v JOIN cliente c ON v.cliente_id = c.id " +
+                "WHERE v.data_venda BETWEEN ? AND ? ORDER BY v.data_venda DESC";
+        List<Venda> vendas = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(inicio));
+            stmt.setTimestamp(2, Timestamp.valueOf(fim));
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Cliente cliente = new Cliente();
+                cliente.setId(rs.getInt("cliente_id"));
+                cliente.setNome(rs.getString("nome"));
+                cliente.setCpf(rs.getString("cpf"));
+                cliente.setTelefone(rs.getString("telefone"));
+                cliente.setPontos(rs.getInt("pontos"));
+
+                Venda venda = new Venda();
+                venda.setCliente(cliente);
+                venda.setPago(rs.getBoolean("is_pago"));
+                venda.setDataVenda(rs.getTimestamp("data_venda").toLocalDateTime());
+                venda.setProdutos(buscarProdutosDaVenda(rs.getInt("id")));
+                venda.somarValorTotal();
+                vendas.add(venda);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return vendas;
+    }
+
+    // Métodos auxiliares para gerenciar os produtos da venda
+    private void inserirProdutosDaVenda(int vendaId, List<ProdutoVenda> produtos) {
+        String sql = "INSERT INTO produto_venda (venda_id, produto_id, quantidade) VALUES (?, ?, ?)";
+        for (ProdutoVenda produtoVenda : produtos) {
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setInt(1, vendaId);
+                stmt.setInt(2, produtoVenda.getProduto().getId());
+                stmt.setInt(3, produtoVenda.getQuantidade());
+                stmt.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private List<ProdutoVenda> buscarProdutosDaVenda(int vendaId) {
+        String sql = "SELECT pv.produto_id, pv.quantidade, p.nome, p.preco, p.tipo, p.quantidadeEstoque, p.resgatavel, p.custoPontos " +
+                "FROM produto_venda pv " +
+                "JOIN produto p ON pv.produto_id = p.id " +
+                "WHERE pv.venda_id = ?";
+        List<ProdutoVenda> produtos = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, vendaId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Produto produto = new Produto();
+                produto.setId(rs.getInt("produto_id"));
+                produto.setNome(rs.getString("nome"));
+                produto.setPreco(rs.getDouble("preco"));
+                produto.setTipo(rs.getString("tipo"));
+                produto.setQuantidadeEstoque(rs.getInt("quantidadeEstoque"));
+                produto.setResgatavel(rs.getBoolean("resgatavel"));
+                produto.setCustoPontos(rs.getInt("custoPontos"));
+                int quantidade = rs.getInt("quantidade");
+                produtos.add(new ProdutoVenda(produto, quantidade));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return produtos;
+    }
+
+    private void removerProdutosDaVenda(int vendaId) {
+        String sql = "DELETE FROM produto_venda WHERE venda_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, vendaId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
