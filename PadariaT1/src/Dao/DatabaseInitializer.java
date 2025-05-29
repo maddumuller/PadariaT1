@@ -40,9 +40,11 @@ public class DatabaseInitializer {
                         "id SERIAL PRIMARY KEY,"+
                         "cliente_id INT,"+
                         "data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"+
-                        "total_valor NUMERIC(10,2) NOT NULL,"+
+                        "valor_total NUMERIC(10,2) NOT NULL,"+
                         "pontos_gerados INT NOT NULL,"+
-                        "FOREIGN KEY (cliente_id) REFERENCES Cliente(id)"+");";
+                        "is_pago BOOLEAN NOT NULL DEFAULT false,"+   // <<< NOVA LINHA
+                        "FOREIGN KEY (cliente_id) REFERENCES Cliente(id)"+
+                        ");";
 
                 stmt.executeUpdate(tabelaVenda);
                 System.out.println("Tabela venda criado com sucesso!");

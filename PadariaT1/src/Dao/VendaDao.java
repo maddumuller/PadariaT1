@@ -14,7 +14,7 @@ public class VendaDao {
     private Connection connection;
 
     public VendaDao(Connection conexao) {
-        this.connection = connection;
+        this.connection = conexao;
     }
 
     public void criarTabela() {
