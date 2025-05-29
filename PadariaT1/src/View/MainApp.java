@@ -1,5 +1,7 @@
 package View;
 
+import Controller.ClienteController;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -7,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainApp {
+
+    private ClienteView clienteView;
     private MenuPrincipal menuPrincipal;
     private ProdutoView produtoView;
     private VendaView vendaView;
@@ -25,6 +29,7 @@ public class MainApp {
         produtos.add(new Produto("Bolo de Chocolate", 20.00, "Bolo", 10, true, 200));
 
         // Inicializa as telas
+        clienteView = new ClienteView();
         menuPrincipal = new MenuPrincipal();
         produtoView = new ProdutoView();
         vendaView = new VendaView();
@@ -41,6 +46,7 @@ public class MainApp {
     }
 
     public void abrirVendaView() {
+        vendaView.carregarClientes();
         vendaView.setVisible(true);
         menuPrincipal.setVisible(false);
     }
@@ -51,7 +57,8 @@ public class MainApp {
     }
 
     public void abrirClienteView() {
-        JOptionPane.showMessageDialog(null, "Tela de Cadastro de Cliente não implementada.");
+        clienteView.setVisible(true);
+        menuPrincipal.setVisible(false);
     }
 
     // Método para voltar ao menu principal
@@ -158,7 +165,8 @@ public class MainApp {
         public void setQuantidade(int quantidade) { this.quantidade = quantidade; }
     }
 
-    // Classe para representar clientes
+
+    //Classe para representar clientes
     private class Cliente {
         private String nome;
         private int pontos;
@@ -207,14 +215,14 @@ public class MainApp {
 
             produtoButton.addActionListener(e -> abrirProdutoView());
             clienteButton.addActionListener(e -> abrirClienteView());
-            vendaButton.addActionListener(e -> abrirVendaView()); // Correção aqui
+            vendaButton.addActionListener(e -> abrirVendaView());
             trocaButton.addActionListener(e -> abrirTrocaPontosView());
             sairButton.addActionListener(e -> System.exit(0));
         }
     }
 
     private class VendaView extends JFrame {
-        private JTextField clienteTextField;
+        private JComboBox<String> clienteComboBox;
         private JList<String> produtosList;
         private DefaultListModel<String> produtosModel;
         private JButton adicionarProdutoButton, finalizarVendaButton, removerProdutoButton;
@@ -233,8 +241,10 @@ public class MainApp {
             JPanel panel = new JPanel(new BorderLayout(10, 10));
             JPanel clientePanel = new JPanel(new BorderLayout());
             clientePanel.add(new JLabel("Cliente:"), BorderLayout.WEST);
-            clienteTextField = new JTextField();
-            clientePanel.add(clienteTextField, BorderLayout.CENTER);
+
+            // Inicializa o ComboBox sem dados
+            clienteComboBox = new JComboBox<>();
+            clientePanel.add(clienteComboBox, BorderLayout.CENTER);
             panel.add(clientePanel, BorderLayout.NORTH);
 
             produtosModel = new DefaultListModel<>();
@@ -268,11 +278,20 @@ public class MainApp {
                 if (index != -1) {
                     removerProduto(index);
                 } else {
-                    JOptionPane.showMessageDialog(this, "Selecione um produto para remover.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Selecione um produto para remover.", "Aviso",
+                            JOptionPane.WARNING_MESSAGE);
                 }
             });
             finalizarVendaButton.addActionListener(e -> finalizarVenda());
             voltarButton.addActionListener(e -> voltarParaMenuPrincipal(this));
+        }
+
+        // Novo método para carregar clientes
+        public void carregarClientes() {
+            clienteComboBox.removeAllItems();
+            for (Cliente c : clientes) {
+                clienteComboBox.addItem(c.getNome());
+            }
         }
 
         public void addProduto(String nome, double preco, int pts) {
@@ -299,38 +318,153 @@ public class MainApp {
         }
 
         private void finalizarVenda() {
-            String clienteNome = clienteTextField.getText().trim();
-            if (clienteNome.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Informe o nome do cliente.", "Erro", JOptionPane.ERROR_MESSAGE);
+            String clienteNome = (String) clienteComboBox.getSelectedItem();
+            if (clienteNome == null) {
+                JOptionPane.showMessageDialog(this, "Selecione um cliente.", "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            Cliente cliente = clientes.stream().filter(c -> c.getNome().equals(clienteNome)).findFirst().orElse(null);
-            if (cliente == null) {
-                cliente = new Cliente(clienteNome, 0);
-                clientes.add(cliente);
-                trocaPontosView.addCliente(clienteNome);
+
+            Cliente cliente = clientes.stream()
+                    .filter(c -> c.getNome().equals(clienteNome))
+                    .findFirst()
+                    .orElse(null);
+
+            if (cliente != null) {
+                cliente.setPontos(cliente.getPontos() + totalPontos);
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Venda finalizada para: " + clienteNome +
+                                "\nSubtotal: R$ " + String.format("%.2f", subtotal) +
+                                "\nPontos ganhos: " + totalPontos,
+                        "Venda Concluída",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+                limparCampos();
+                voltarParaMenuPrincipal(this);
             }
-            cliente.setPontos(cliente.getPontos() + totalPontos);
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Venda finalizada para: " + clienteNome +
-                            "\nSubtotal: R$ " + String.format("%.2f", subtotal) +
-                            "\nPontos ganhos: " + totalPontos,
-                    "Venda Concluída",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-            limparCampos();
-            voltarParaMenuPrincipal(this);
         }
 
         public void limparCampos() {
-            clienteTextField.setText("");
+            clienteComboBox.setSelectedIndex(-1);
             produtosModel.clear();
             precos.clear();
             pontos.clear();
             subtotal = 0.0;
             totalPontos = 0;
             atualizarInfo();
+        }
+    }
+
+    private class ClienteView extends JFrame {
+        private JTextField cpfField;
+        private JTextField nomeField;
+        private JTextField telefoneField;
+        private JButton cadastrarButton;
+
+        public ClienteView() {
+            setTitle("Cadastro de Cliente");
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            setSize(400, 300);
+            setLocationRelativeTo(null);
+
+            JPanel panel = new JPanel(new GridLayout(8, 2, 10, 10));
+            panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+            // Campo CPF
+            panel.add(new JLabel("CPF (somente números):"));
+            cpfField = new JTextField();
+            panel.add(cpfField);
+
+            // Campo Nome
+            panel.add(new JLabel("Nome:"));
+            nomeField = new JTextField();
+            panel.add(nomeField);
+
+            // Campo Telefone
+            panel.add(new JLabel("Telefone (DDD + número):"));
+            telefoneField = new JTextField();
+            panel.add(telefoneField);
+
+            // Botões
+            cadastrarButton = new JButton("Cadastrar Cliente");
+            JButton voltarButton = new JButton("Voltar");
+            panel.add(cadastrarButton);
+            panel.add(voltarButton);
+
+            add(panel);
+
+            // Action Listeners
+            cadastrarButton.addActionListener(e -> {
+                try {
+                    // Validação do CPF
+                    String cpf = cpfField.getText().trim().replaceAll("[^0-9]", "");
+                    if (cpf.length() != 11) {
+                        throw new IllegalArgumentException("CPF deve conter 11 dígitos numéricos.");
+                    }
+
+                    // Validação do nome
+                    String nome = nomeField.getText().trim();
+                    if (nome.isEmpty()) {
+                        throw new IllegalArgumentException("Nome é obrigatório.");
+                    }
+
+                    // Validação do telefone
+                    String telefone = telefoneField.getText().trim().replaceAll("[^0-9]", "");
+                    if (telefone.length() != 11) {
+                        throw new IllegalArgumentException("Telefone deve conter 11 dígitos (DDD + 9 + número).");
+                    }
+
+                    // Verifica se já existe um cliente com o mesmo CPF
+                    boolean clienteExistente = clientes.stream()
+                            .anyMatch(c -> c.getNome().equalsIgnoreCase(nome));
+
+                    if (clienteExistente) {
+                        throw new IllegalArgumentException("Já existe um cliente cadastrado com este nome.");
+                    }
+
+                    // Cadastra o novo cliente (pontos começam em 0)
+                    Cliente novoCliente = new Cliente(nome, 0);
+                    clientes.add(novoCliente);
+
+                    // Adiciona o cliente na tela de troca de pontos
+                    trocaPontosView.addCliente(nome);
+
+                    JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
+
+                    // Limpa os campos
+                    limparCampos();
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null,
+                            "Erro ao cadastrar: " + ex.getMessage(),
+                            "Erro",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            });
+
+            voltarButton.addActionListener(e -> voltarParaMenuPrincipal(this));
+        }
+
+        private void limparCampos() {
+            cpfField.setText("");
+            nomeField.setText("");
+            telefoneField.setText("");
+        }
+
+        private String formatarTelefone(String telefone) {
+            return String.format("(%s) %s%s-%s",
+                    telefone.substring(0, 2),
+                    telefone.substring(2, 3),
+                    telefone.substring(3, 7),
+                    telefone.substring(7));
+        }
+
+        private String formatarCPF(String cpf) {
+            return String.format("%s.%s.%s-%s",
+                    cpf.substring(0, 3),
+                    cpf.substring(3, 6),
+                    cpf.substring(6, 9),
+                    cpf.substring(9));
         }
     }
 

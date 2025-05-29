@@ -1,94 +1,107 @@
 package View;
-import Controller.ClienteController;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.sql.Connection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import Controller.ClienteController;
+import Controller.ProdutoController;
 
 public class ClienteView extends JFrame {
-    private JTextField nomeField;
-    private JTextField cpfField;
-    private JTextField telefoneField;
-    private JTextField pontosField;
-    private JButton cadastrarButton;
+    private MenuPrincipal menuPrincipal;
+    private JTextField nomeField, cpfField, telefoneField, pontosField;
+    private JButton salvarButton, limparButton, voltarButton;
+    private ClienteController controller;
 
-    private ClienteController clienteController;
+    // Construtor que recebe a tela principal
+    public ClienteView() {
 
-    public ClienteView(Connection connection) {
-        clienteController = new ClienteController(connection);
 
         setTitle("Cadastro de Cliente");
-        setSize(400, 300);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null); // centraliza janela
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(400, 350);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(4, 2, 10, 10));
+        // Painel de formulário
+        JPanel formPanel = new JPanel(new GridLayout(8, 2, 10, 10));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
 
-        panel.add(new JLabel("Nome:"));
+        formPanel.add(new JLabel("Nome:"));
         nomeField = new JTextField();
-        panel.add(nomeField);
+        formPanel.add(nomeField);
 
-        panel.add(new JLabel("CPF:"));
+        formPanel.add(new JLabel("CPF:"));
         cpfField = new JTextField();
-        panel.add(cpfField);
+        formPanel.add(cpfField);
 
-        panel.add(new JLabel("Telefone:"));
+        formPanel.add(new JLabel("Telefone:"));
         telefoneField = new JTextField();
-        panel.add(telefoneField);
+        formPanel.add(telefoneField);
 
-        panel.add(new JLabel("Pontos:"));
-        pontosField = new JTextField();
-        panel.add(pontosField);
+        formPanel.add(new JLabel("Total de Pontos:"));
+        pontosField = new JTextField("0");
+        pontosField.setEditable(false);
+        formPanel.add(pontosField);
 
-        cadastrarButton = new JButton("Cadastrar Cliente");
-        panel.add(cadastrarButton);
+        add(formPanel, BorderLayout.CENTER);
 
-        // botão invisível para manter grid
-        panel.add(new JLabel(""));
+        // Painel de botões
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        salvarButton = new JButton("Salvar");
+        limparButton = new JButton("Limpar");
+        voltarButton = new JButton("Voltar");
 
-        add(panel);
+        buttonPanel.add(salvarButton);
+        buttonPanel.add(limparButton);
+        buttonPanel.add(voltarButton);
 
-        // Evento do botão
-        cadastrarButton.addActionListener(new ActionListener() {
+        add(buttonPanel, BorderLayout.SOUTH);
+
+        // Ação do botão Salvar
+        salvarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String nome = nomeField.getText();
-                String cpf = cpfField.getText();
-                String telefone = telefoneField.getText();
-                int pontos; // ver sobre pontos dps
-
                 try {
+                    String nome = nomeField.getText();
+                    String cpf = cpfField.getText();
+                    String telefone = telefoneField.getText();
+                    int pontos = Integer.parseInt(pontosField.getText());
 
-                    pontos = Integer.parseInt(pontosField.getText());
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Pontos inválidos. Insira um número inteiro.");
-                    return;
+                    if (controller != null) {
+                        controller.cadastrarCliente(nome, cpf, telefone, pontos);
+                        JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
+                    }
+
+                    limparCampos();
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Erro ao cadastrar: " + ex.getMessage());
                 }
-
-                String resultado = clienteController.cadastrarCliente(nome, cpf, telefone, pontos);
-                JOptionPane.showMessageDialog(null, resultado);
-                limparCampos();
             }
         });
 
-        setVisible(true);
+        // Ação do botão Limpar
+        limparButton.addActionListener(e -> limparCampos());
+
+        // Ação do botão Voltar
+        voltarButton.addActionListener(e -> voltarParaMenuPrincipal());
+    }
+
+    private void voltarParaMenuPrincipal() {
+            menuPrincipal.setVisible(true);
+            dispose();
     }
 
     private void limparCampos() {
         nomeField.setText("");
         cpfField.setText("");
         telefoneField.setText("");
+        pontosField.setText("0");
     }
-    public static void main(String[] args) {
-        try {
-            Connection conn = Dao.ConexaoBD.conectar();
-            new ClienteView(conn);
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Erro ao conectar com o banco de dados: " + e.getMessage());
-        }
-    }}
 
+    public void setController(ClienteController controller) {
+        this.controller = controller;
+    }
+}
 
