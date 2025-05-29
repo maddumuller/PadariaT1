@@ -80,21 +80,11 @@ public class ClienteController {
 
     // Listar todos os clientes
     public List<Cliente> listarClientes() {
-        List<Cliente> clientes = new ArrayList<>();
-        try (ResultSet rs = clienteDao.listarClientes()) {
-            while (rs.next()) {
-                Cliente c = new Cliente(
-                        rs.getString("nome"),
-                        rs.getString("cpf"),
-                        rs.getString("telefone"),
-                        rs.getInt("pontos")
-                );
-                c.setId(rs.getInt("id")); // Corrigido: atribui o ID
-                clientes.add(c);
-            }
+        try {
+            return clienteDao.listarClientes();
         } catch (SQLException e) {
             System.out.println("Erro ao listar clientes: " + e.getMessage());
+            return new ArrayList<>();
         }
-        return clientes;
     }
 }

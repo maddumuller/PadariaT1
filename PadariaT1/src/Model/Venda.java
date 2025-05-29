@@ -79,6 +79,7 @@ public class Venda {
 
     public void setProdutos(List<ProdutoVenda> produtos) {
         this.produtos = produtos;
+        somarValorTotal();  // Atualiza valor total automaticamente
     }
 
     // Método para visualizar venda
@@ -98,5 +99,17 @@ public class Venda {
                         " | Subtotal: R$ " + String.format("%.2f", pv.getSubtotal()));
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Venda{" +
+                "id=" + id +
+                ", cliente=" + (cliente != null ? cliente.getNome() : "N/A") +
+                ", isPago=" + isPago +
+                ", valorTotal=" + valorTotal +
+                ", dataVenda=" + dataVenda +
+                ", produtos=" + produtos +
+                '}';
     }
 }

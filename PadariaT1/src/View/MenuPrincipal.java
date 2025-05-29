@@ -34,7 +34,7 @@ public class MenuPrincipal extends JFrame {
             this.conexao = ConexaoBD.conectar();
             ProdutoDao produtoDao = new ProdutoDao(conexao);
             ClienteDao clienteDao = new ClienteDao(conexao);
-            VendaController vendaDao = new VendaController(conexao);
+
             this.produtoController = new ProdutoController(produtoDao);
             this.clienteController = new ClienteController(conexao);
             this.vendaController = new VendaController(conexao);
@@ -44,15 +44,15 @@ public class MenuPrincipal extends JFrame {
             System.exit(1);
         }
 
-        produtoButton = new JButton("Cadastro de Produto");
+        produtoButton = new JButton("Produto");
         produtoButton.setBounds(100, 50, 200, 30);
         add(produtoButton);
 
-        clienteButton = new JButton("Cadastro de Cliente");
+        clienteButton = new JButton("Cliente");
         clienteButton.setBounds(100, 100, 200, 30);
         add(clienteButton);
 
-        vendaButton = new JButton("Cadastro de Venda");
+        vendaButton = new JButton("Venda");
         vendaButton.setBounds(100, 150, 200, 30);
         add(vendaButton);
 
@@ -86,8 +86,9 @@ public class MenuPrincipal extends JFrame {
         vendaButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(null, "Abrir tela de Venda...");
-                 VendaView vendaView = new VendaView();
+                 VendaView vendaView = new VendaView(vendaController);
                  vendaView.setVisible(true);
+                dispose();
             }
         });
         trocaPontosButton.addActionListener(new ActionListener() {

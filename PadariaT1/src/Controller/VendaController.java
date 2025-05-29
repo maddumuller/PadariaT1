@@ -1,56 +1,112 @@
 package Controller;
 
-import Dao.VendaDao;  // Changed from VendaDAO to VendaDao
+import Dao.ClienteDao;
+import Dao.ProdutoDao;
+import Dao.VendaDao;
 import Model.Cliente;
+import Model.Produto;
 import Model.ProdutoVenda;
 import Model.Venda;
 
+import javax.swing.*;
 import java.sql.Connection;
-import java.time.LocalDateTime;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class VendaController {
-    private final VendaDao vendaDao;  // Changed from VendaDAO to VendaDao
+    private ClienteDao clienteDao;
+    private ProdutoDao produtoDao;
+    private VendaDao vendaDao;
 
-    public VendaController(Connection connection) {
-        this.vendaDao = new VendaDao(connection);  // Changed from VendaDAO to VendaDao
+    public VendaController(Connection conexao) {
+        this.clienteDao = new ClienteDao(conexao);
+        this.produtoDao = new ProdutoDao(conexao);
+        this.vendaDao = new VendaDao(conexao);
     }
 
-    public int cadastrarVenda(Cliente cliente, List<ProdutoVenda> produtos) {
-        Venda venda = new Venda(cliente);
-        venda.setProdutos(produtos);
-        venda.somarValorTotal();
-        venda.setDataVenda(LocalDateTime.now());
-        venda.setPago(false);
-        return vendaDao.inserir(venda);  // Changed from vendaDAO to vendaDao
+    // Retorna nomes dos clientes para popular o JComboBox
+    public List<String> getClientesNomes() {
+        List<String> nomes = new ArrayList<>();
+        try {
+            for (Cliente cliente : clienteDao.listarClientes()) {
+                nomes.add(cliente.getNome());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return nomes;
     }
 
-    public List<Venda> listarVendas() {
-        return vendaDao.listarTodas();  // Changed from vendaDAO to vendaDao
+    // Retorna pontos por produto (ex: 1 ponto por R$10)
+    public int getPontosPorProduto(Produto produto) {
+        return (int) produto.getPreco() / 10;
     }
 
-    public Venda buscarVendaPorId(int id) {
-        return vendaDao.buscarPorId(id);  // Changed from vendaDAO to vendaDao
+    // Diálogo para escolher produto e quantidade
+    public ProdutoVenda selecionarProdutoDialog(JFrame parent) {
+        List<Produto> produtos = null;
+        try {
+            produtos = produtoDao.listarProdutos();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        if (produtos.isEmpty()) {
+            JOptionPane.showMessageDialog(parent, "Nenhum produto disponível.");
+            return null;
+        }
+
+        String[] nomes = produtos.stream().map(Produto::getNome).toArray(String[]::new);
+        String selecionado = (String) JOptionPane.showInputDialog(
+                parent, "Selecione um produto:", "Escolher Produto",
+                JOptionPane.PLAIN_MESSAGE, null, nomes, nomes[0]
+        );
+
+        if (selecionado == null) return null;
+
+        Produto produtoSelecionado = produtos.stream()
+                .filter(p -> p.getNome().equals(selecionado))
+                .findFirst().orElse(null);
+
+        if (produtoSelecionado == null) return null;
+
+        String qtdStr = JOptionPane.showInputDialog(parent, "Quantidade:");
+        if (qtdStr == null || qtdStr.isEmpty()) return null;
+
+        try {
+            int quantidade = Integer.parseInt(qtdStr);
+            if (quantidade <= 0) throw new NumberFormatException();
+            return new ProdutoVenda(produtoSelecionado, quantidade);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(parent, "Quantidade inválida.");
+            return null;
+        }
     }
 
-    public List<Venda> listarVendasPorCliente(int clienteId) {
-        return vendaDao.buscarPorCliente(clienteId);  // Changed from vendaDAO to vendaDao
-    }
+    // Finaliza a venda
+    public boolean finalizarVenda(String nomeCliente, List<ProdutoVenda> produtos, double subtotal, int pontosGanhos) {
+        try {
+            Cliente cliente = clienteDao.buscarPorNome(nomeCliente);
+            if (cliente == null) return false;
 
-    public void marcarVendaComoPaga(int id) {
-        vendaDao.marcarComoPago(id);  // Changed from vendaDAO to vendaDao
-    }
+            Venda venda = new Venda(cliente);
+            venda.setProdutos(produtos);
+            venda.setValorTotal(subtotal);
+            venda.setPago(true);
 
-    public void removerVenda(int id) {
-        vendaDao.remover(id);  // Changed from vendaDAO to vendaDao
-    }
+            boolean sucesso = vendaDao.registrarVenda(venda);
 
-    public void atualizarVenda(Venda venda, int id) {
-        venda.somarValorTotal();
-        vendaDao.atualizar(venda, id);  // Changed from vendaDAO to vendaDao
-    }
+            if (sucesso) {
+                cliente.setPontos(cliente.getPontos() + pontosGanhos);
+                clienteDao.atualizarCliente(cliente);
+            }
 
-    public List<Venda> buscarVendasPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
-        return vendaDao.buscarPorPeriodo(inicio, fim);  // Changed from vendaDAO to vendaDao
+            return sucesso;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
+
+

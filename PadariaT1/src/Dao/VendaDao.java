@@ -13,7 +13,7 @@ import java.util.List;
 public class VendaDao {
     private Connection connection;
 
-    public VendaDao(Connection connection) {
+    public VendaDao(Connection conexao) {
         this.connection = connection;
     }
 
@@ -29,11 +29,11 @@ public class VendaDao {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.execute();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao criar tabela venda", e);
         }
     }
 
-    public int inserir(Venda venda) {
+    public boolean registrarVenda(Venda venda) {
         String sql = "INSERT INTO venda (cliente_id, is_pago, valor_total, data_venda) VALUES (?, ?, ?, ?) RETURNING id";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, venda.getCliente().getId());
@@ -44,13 +44,14 @@ public class VendaDao {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 int vendaId = rs.getInt(1);
+                venda.setId(vendaId);
                 inserirProdutosDaVenda(vendaId, venda.getProdutos());
-                return vendaId;
+                return true;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao registrar venda", e);
         }
-        return -1;
+        return false;
     }
 
     public Venda buscarPorId(int id) {
@@ -61,23 +62,18 @@ public class VendaDao {
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                Cliente cliente = new Cliente();
-                cliente.setId(rs.getInt("cliente_id"));
-                cliente.setNome(rs.getString("nome"));
-                cliente.setCpf(rs.getString("cpf"));
-                cliente.setTelefone(rs.getString("telefone"));
-                cliente.setPontos(rs.getInt("pontos"));
-
+                Cliente cliente = montarCliente(rs);
                 Venda venda = new Venda();
+                venda.setId(rs.getInt("id")); // importante setar id da venda
                 venda.setCliente(cliente);
                 venda.setPago(rs.getBoolean("is_pago"));
                 venda.setDataVenda(rs.getTimestamp("data_venda").toLocalDateTime());
-                venda.setProdutos(buscarProdutosDaVenda(rs.getInt("id")));
+                venda.setProdutos(buscarProdutosDaVenda(id));
                 venda.somarValorTotal();
                 return venda;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao buscar venda por id", e);
         }
         return null;
     }
@@ -90,23 +86,19 @@ public class VendaDao {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Cliente cliente = new Cliente();
-                cliente.setId(rs.getInt("cliente_id"));
-                cliente.setNome(rs.getString("nome"));
-                cliente.setCpf(rs.getString("cpf"));
-                cliente.setTelefone(rs.getString("telefone"));
-                cliente.setPontos(rs.getInt("pontos"));
-
+                Cliente cliente = montarCliente(rs);
+                int vendaId = rs.getInt("id");
                 Venda venda = new Venda();
+                venda.setId(vendaId);
                 venda.setCliente(cliente);
                 venda.setPago(rs.getBoolean("is_pago"));
                 venda.setDataVenda(rs.getTimestamp("data_venda").toLocalDateTime());
-                venda.setProdutos(buscarProdutosDaVenda(rs.getInt("id")));
+                venda.setProdutos(buscarProdutosDaVenda(vendaId));
                 venda.somarValorTotal();
                 vendas.add(venda);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao listar vendas", e);
         }
         return vendas;
     }
@@ -121,23 +113,19 @@ public class VendaDao {
             stmt.setInt(1, clienteId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Cliente cliente = new Cliente();
-                cliente.setId(rs.getInt("cliente_id"));
-                cliente.setNome(rs.getString("nome"));
-                cliente.setCpf(rs.getString("cpf"));
-                cliente.setTelefone(rs.getString("telefone"));
-                cliente.setPontos(rs.getInt("pontos"));
-
+                Cliente cliente = montarCliente(rs);
+                int vendaId = rs.getInt("id");
                 Venda venda = new Venda();
+                venda.setId(vendaId);
                 venda.setCliente(cliente);
                 venda.setPago(rs.getBoolean("is_pago"));
                 venda.setDataVenda(rs.getTimestamp("data_venda").toLocalDateTime());
-                venda.setProdutos(buscarProdutosDaVenda(rs.getInt("id")));
+                venda.setProdutos(buscarProdutosDaVenda(vendaId));
                 venda.somarValorTotal();
                 vendas.add(venda);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao buscar vendas por cliente", e);
         }
         return vendas;
     }
@@ -153,7 +141,7 @@ public class VendaDao {
             removerProdutosDaVenda(id);
             inserirProdutosDaVenda(id, venda.getProdutos());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao atualizar venda", e);
         }
     }
 
@@ -163,17 +151,19 @@ public class VendaDao {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao marcar venda como paga", e);
         }
     }
 
     public void remover(int id) {
+        // Remover produtos da venda antes para manter integridade
+        removerProdutosDaVenda(id);
         String sql = "DELETE FROM venda WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao remover venda", e);
         }
     }
 
@@ -188,23 +178,19 @@ public class VendaDao {
             stmt.setTimestamp(2, Timestamp.valueOf(fim));
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Cliente cliente = new Cliente();
-                cliente.setId(rs.getInt("cliente_id"));
-                cliente.setNome(rs.getString("nome"));
-                cliente.setCpf(rs.getString("cpf"));
-                cliente.setTelefone(rs.getString("telefone"));
-                cliente.setPontos(rs.getInt("pontos"));
-
+                Cliente cliente = montarCliente(rs);
+                int vendaId = rs.getInt("id");
                 Venda venda = new Venda();
+                venda.setId(vendaId);
                 venda.setCliente(cliente);
                 venda.setPago(rs.getBoolean("is_pago"));
                 venda.setDataVenda(rs.getTimestamp("data_venda").toLocalDateTime());
-                venda.setProdutos(buscarProdutosDaVenda(rs.getInt("id")));
+                venda.setProdutos(buscarProdutosDaVenda(vendaId));
                 venda.somarValorTotal();
                 vendas.add(venda);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao buscar vendas por período", e);
         }
         return vendas;
     }
@@ -212,15 +198,17 @@ public class VendaDao {
     // Métodos auxiliares para gerenciar os produtos da venda
     private void inserirProdutosDaVenda(int vendaId, List<ProdutoVenda> produtos) {
         String sql = "INSERT INTO produto_venda (venda_id, produto_id, quantidade) VALUES (?, ?, ?)";
-        for (ProdutoVenda produtoVenda : produtos) {
-            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setInt(1, vendaId);
-                stmt.setInt(2, produtoVenda.getProduto().getId());
-                stmt.setInt(3, produtoVenda.getQuantidade());
-                stmt.executeUpdate();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+        try {
+            for (ProdutoVenda produtoVenda : produtos) {
+                try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                    stmt.setInt(1, vendaId);
+                    stmt.setInt(2, produtoVenda.getProduto().getId());
+                    stmt.setInt(3, produtoVenda.getQuantidade());
+                    stmt.executeUpdate();
+                }
             }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao inserir produtos da venda", e);
         }
     }
 
@@ -246,7 +234,7 @@ public class VendaDao {
                 produtos.add(new ProdutoVenda(produto, quantidade));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao buscar produtos da venda", e);
         }
         return produtos;
     }
@@ -257,7 +245,17 @@ public class VendaDao {
             stmt.setInt(1, vendaId);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao remover produtos da venda", e);
         }
+    }
+
+    private Cliente montarCliente(ResultSet rs) throws SQLException {
+        Cliente cliente = new Cliente();
+        cliente.setId(rs.getInt("cliente_id"));
+        cliente.setNome(rs.getString("nome"));
+        cliente.setCpf(rs.getString("cpf"));
+        cliente.setTelefone(rs.getString("telefone"));
+        cliente.setPontos(rs.getInt("pontos"));
+        return cliente;
     }
 }

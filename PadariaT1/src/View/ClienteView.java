@@ -124,7 +124,7 @@ public class ClienteView extends JFrame {
             String telefone = telefoneField.getText();
             int pontos = Integer.parseInt(pontosField.getText());
 
-            int id = controller.buscarIdPorCpf(cpf);
+            int id = controller.buscarIdPorCpf(cpf); // buscar id pelo CPF
             if (id == -1) {
                 JOptionPane.showMessageDialog(this, "Cliente não encontrado para atualizar.");
                 return;
@@ -134,14 +134,10 @@ public class ClienteView extends JFrame {
             String resposta = controller.atualizarCliente(cliente);
             JOptionPane.showMessageDialog(this, resposta);
             limparCampos();
-            carregarClientes();  // Atualiza a tabela
-        } catch (NumberFormatException nfe) {
-            JOptionPane.showMessageDialog(this, "Pontos inválidos.");
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Erro ao atualizar cliente: " + ex.getMessage());
         }
     }
-
 
     private void deletarCliente() {
         if (idSelecionado == -1) {

@@ -2,12 +2,15 @@ package Dao;
 
 import Model.Cliente;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClienteDao {
     private Connection connection;
 
-    public ClienteDao(Connection connection) {
-        this.connection = connection;
+    // Construtor que recebe a conexão já criada
+    public ClienteDao(Connection conexao) {
+        this.connection = conexao;
     }
 
     public void adicionarCliente(Cliente cliente) throws SQLException {
@@ -20,7 +23,6 @@ public class ClienteDao {
             stmt.executeUpdate();
         }
     }
-
 
     public void atualizarCliente(Cliente cliente) throws SQLException {
         String sql = "UPDATE cliente SET nome = ?, cpf = ?, telefone = ?, pontos = ? WHERE id = ?";
@@ -51,13 +53,26 @@ public class ClienteDao {
         }
     }
 
-    // Método para listar clientes (exemplo)
-    public ResultSet listarClientes() throws SQLException {
+    public List<Cliente> listarClientes() throws SQLException {
+        List<Cliente> clientes = new ArrayList<>();
         String sql = "SELECT * FROM cliente";
-        PreparedStatement stmt = connection.prepareStatement(sql);
-        return stmt.executeQuery();
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Cliente c = new Cliente(
+                        rs.getString("nome"),
+                        rs.getString("cpf"),
+                        rs.getString("telefone"),
+                        rs.getInt("pontos")
+                );
+                c.setId(rs.getInt("id"));
+                clientes.add(c);
+            }
+        }
+        return clientes;
     }
 
+    // Busca cliente pelo CPF
     public Cliente buscarPorCpf(String cpf) throws SQLException {
         String sql = "SELECT * FROM cliente WHERE cpf = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -77,4 +92,26 @@ public class ClienteDao {
         }
         return null;
     }
+
+    // Busca cliente pelo nome
+    public Cliente buscarPorNome(String nome) throws SQLException {
+        String sql = "SELECT * FROM cliente WHERE nome = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, nome);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Cliente cliente = new Cliente(
+                            rs.getString("nome"),
+                            rs.getString("cpf"),
+                            rs.getString("telefone"),
+                            rs.getInt("pontos")
+                    );
+                    cliente.setId(rs.getInt("id"));
+                    return cliente;
+                }
+            }
+        }
+        return null;
+    }
 }
+
