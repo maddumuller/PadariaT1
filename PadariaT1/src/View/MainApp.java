@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainApp {
+    private ClienteView clienteView;
     private MenuPrincipal menuPrincipal;
     private ProdutoView produtoView;
     private VendaView vendaView;
@@ -25,6 +26,7 @@ public class MainApp {
         produtos.add(new Produto("Bolo de Chocolate", 20.00, "Bolo", 10, true, 200));
 
         // Inicializa as telas
+        clienteView = new ClienteView();
         menuPrincipal = new MenuPrincipal();
         produtoView = new ProdutoView();
         vendaView = new VendaView();
@@ -51,7 +53,8 @@ public class MainApp {
     }
 
     public void abrirClienteView() {
-        JOptionPane.showMessageDialog(null, "Tela de Cadastro de Cliente não implementada.");
+        clienteView.setVisible(true);
+        menuPrincipal.setVisible(false);
     }
 
     // Método para voltar ao menu principal

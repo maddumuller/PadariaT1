@@ -5,91 +5,106 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import Controller.ClienteController;
-import Controller.ProdutoController;
-
 
 public class ClienteView extends JFrame {
+    private MenuPrincipal menuPrincipal;
     private JTextField nomeField, cpfField, telefoneField, pontosField;
-    private JButton salvarButton, limparButton;
+    private JButton salvarButton, limparButton, voltarButton;
     private ClienteController controller;
 
+    // Construtor que recebe a tela principal
     public ClienteView() {
+        this.menuPrincipal = menuPrincipal;
+
         setTitle("Cadastro de Cliente");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 300);
+        setSize(400, 350);
         setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
 
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        // Painel de formulário
+        JPanel formPanel = new JPanel(new GridLayout(8, 2, 10, 10));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
 
-        panel.add(new JLabel("Nome:"));
+        formPanel.add(new JLabel("Nome:"));
         nomeField = new JTextField();
-        panel.add(nomeField);
+        formPanel.add(nomeField);
 
-        panel.add(new JLabel("CPF:"));
+        formPanel.add(new JLabel("CPF:"));
         cpfField = new JTextField();
-        panel.add(cpfField);
+        formPanel.add(cpfField);
 
-        panel.add(new JLabel("Telefone:"));
+        formPanel.add(new JLabel("Telefone:"));
         telefoneField = new JTextField();
-        panel.add(telefoneField);
+        formPanel.add(telefoneField);
 
-        panel.add(new JLabel("Total de Pontos:"));
-        pontosField = new JTextField();
+        formPanel.add(new JLabel("Total de Pontos:"));
+        pontosField = new JTextField("0");
         pontosField.setEditable(false);
-        pontosField.setText("0");
-        panel.add(pontosField);
+        formPanel.add(pontosField);
 
+        add(formPanel, BorderLayout.CENTER);
+
+        // Painel de botões
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         salvarButton = new JButton("Salvar");
         limparButton = new JButton("Limpar");
+        voltarButton = new JButton("Voltar");
 
-        panel.add(salvarButton);
-        panel.add(limparButton);
+        buttonPanel.add(salvarButton);
+        buttonPanel.add(limparButton);
+        buttonPanel.add(voltarButton);
 
-        add(panel);
+        add(buttonPanel, BorderLayout.SOUTH);
+
+        // Ação do botão Salvar
+        salvarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    String nome = nomeField.getText();
+                    String cpf = cpfField.getText();
+                    String telefone = telefoneField.getText();
+                    int pontos = Integer.parseInt(pontosField.getText());
+
+                    if (controller != null) {
+                        controller.cadastrarCliente(nome, cpf, telefone, pontos);
+                        JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
+                    }
+
+                    limparCampos();
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Erro ao cadastrar: " + ex.getMessage());
+                }
+            }
+        });
+
+        // Ação do botão Limpar
+        limparButton.addActionListener(e -> limparCampos());
+
+        // Ação do botão Voltar
+        voltarButton.addActionListener(e -> voltarParaMenuPrincipal());
     }
 
-    public String getNome() { return nomeField.getText(); }
-    public String getCpf() { return cpfField.getText(); }
-    public String getTelefone() { return telefoneField.getText(); }
+    private void voltarParaMenuPrincipal() {
+        dispose(); // Fecha a janela atual
+        if (menuPrincipal != null) {
+            menuPrincipal.setVisible(true); // Mostra a tela principal
+        }
+    }
 
-    public void limparCampos() {
+    private void limparCampos() {
         nomeField.setText("");
         cpfField.setText("");
         telefoneField.setText("");
+        pontosField.setText("0");
     }
 
-    public void actionPerformed(ActionEvent e) {
-        try {
-            String nome = nomeField.getText();
-            String cpf = cpfField.getText();
-            String telefone = telefoneField.getText();
-            int pontos = Integer.parseInt(pontosField.getText());
-
-            controller.cadastrarCliente(nome,cpf,telefone, pontos);
-            JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
-
-            // Limpar os campos
-            nomeField.setText("");
-            cpfField.setText("");
-            telefoneField.setText("");
-            pontosField.setText("");
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Erro ao cadastrar: " + ex.getMessage());
-        }
-
-};
-
-
-    public void addSalvarListener(ActionListener listener) {
-        salvarButton.addActionListener(listener);
+    public void setController(ClienteController controller) {
+        this.controller = controller;
     }
 
-    public void addLimparListener(ActionListener listener) {
-        limparButton.addActionListener(listener);
-    }
-
-    public static void main(String[] args) {
-        new ClienteView().setVisible(true);
-    }
+    // Removido o main(), pois essa tela deve ser chamada pela MenuPrincipal
 }
+
