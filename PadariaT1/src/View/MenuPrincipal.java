@@ -1,5 +1,6 @@
 package View;
 
+import Controller.ClienteController;
 import Controller.ProdutoController;
 
 import javax.swing.*;
@@ -17,6 +18,7 @@ public class MenuPrincipal extends JFrame {
     private JButton sairButton;
     private Connection conexao;
     private ProdutoController produtoController;
+    private ClienteController clienteController;
 
     public MenuPrincipal() {
         setTitle("Menu Principal - PadariaT1");
@@ -60,9 +62,8 @@ public class MenuPrincipal extends JFrame {
 
         clienteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Abrir tela de Cliente...");
-                // ClienteView clienteView = new ClienteView();
-                // clienteView.setVisible(true);
+                ClienteView clienteView = new ClienteView((Connection) clienteController);
+                clienteView.setVisible(true);
             }
         });
 
