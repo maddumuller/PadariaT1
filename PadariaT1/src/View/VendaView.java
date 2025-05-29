@@ -1,42 +1,48 @@
 package View;
 
 import Controller.VendaController;
+import Dao.ConexaoBD;
+import Dao.VendaDao;
+import Model.Cliente;
+import Model.Produto;
+import Model.ProdutoVenda;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 public class VendaView extends JFrame {
-    private JComboBox<String> clienteComboBox;
+    private JComboBox<Cliente> clienteComboBox;
     private JList<String> produtosList;
     private DefaultListModel<String> produtosModel;
     private JButton adicionarProdutoButton, finalizarVendaButton, removerProdutoButton;
     private JLabel pontosLabel, subtotalLabel;
     private VendaController vendaController;
 
-
     private int totalPontos = 0;
     private double subtotal = 0.0;
 
-    private java.util.List<Double> precos = new java.util.ArrayList<>();
-    private java.util.List<Integer> pontos = new java.util.ArrayList<>();
+    private List<Double> precos = new ArrayList<>();
+    private List<Integer> pontos = new ArrayList<>();
 
-    public VendaView()
-    {
+    public VendaView(VendaController vendaController) {
         this.vendaController = vendaController;
+
         setTitle("Registrar Venda");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(600, 450);
         setLocationRelativeTo(null);
 
         JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Painel do cliente
         JPanel clientePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         clientePanel.add(new JLabel("Cliente:"));
         clienteComboBox = new JComboBox<>();
         clientePanel.add(clienteComboBox);
-
         panel.add(clientePanel, BorderLayout.NORTH);
 
         // Lista de produtos
@@ -65,6 +71,23 @@ public class VendaView extends JFrame {
 
         add(panel, BorderLayout.CENTER);
         add(botoesPanel, BorderLayout.SOUTH);
+//
+//        carregarClientes();
+
+        // Ação adicionar produto
+        adicionarProdutoButton.addActionListener(e -> {
+            String nomeProduto = JOptionPane.showInputDialog(this, "Nome do Produto:");
+            String precoStr = JOptionPane.showInputDialog(this, "Preço:");
+            String pontosStr = JOptionPane.showInputDialog(this, "Pontos:");
+
+            try {
+                double preco = Double.parseDouble(precoStr);
+                int pts = Integer.parseInt(pontosStr);
+                addProduto(nomeProduto, preco, pts);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Entrada inválida!", "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         // Ação remover produto
         removerProdutoButton.addActionListener(e -> {
@@ -76,9 +99,16 @@ public class VendaView extends JFrame {
             }
         });
 
-        // Ação finalizar venda
-        finalizarVendaButton.addActionListener(e -> finalizarVenda());
+//        // Ação finalizar venda
+//        finalizarVendaButton.addActionListener(e -> finalizarVenda());
     }
+
+//    private void carregarClientes() {
+//        List<Cliente> clientes = vendaController.listarClientes();
+//        for (Cliente c : clientes) {
+//            clienteComboBox.addItem(c);
+//        }
+//    }
 
     public void addProduto(String nome, double preco, int pts) {
         produtosModel.addElement(nome + " - R$ " + String.format("%.2f", preco) + " (+" + pts + " pts)");
@@ -112,34 +142,54 @@ public class VendaView extends JFrame {
         atualizarInfo();
     }
 
-    private void finalizarVenda() {
-        String cliente = (String) clienteComboBox.getSelectedItem();
-        JOptionPane.showMessageDialog(
-                this,
-                "Venda finalizada para: " + cliente +
-                        "\nSubtotal: R$ " + String.format("%.2f", subtotal) +
-                        "\nPontos ganhos: " + totalPontos,
-                "Venda Concluída",
-                JOptionPane.INFORMATION_MESSAGE
-        );
-        limparCampos();
-    }
-
-    public String getClienteSelecionado() {
-        return (String) clienteComboBox.getSelectedItem();
-    }
-
-    public void addCliente(String cliente) {
-        clienteComboBox.addItem(cliente);
-    }
+//    private void finalizarVenda() {
+//        Cliente cliente = (Cliente) clienteComboBox.getSelectedItem();
+//
+//        if (cliente == null) {
+//            JOptionPane.showMessageDialog(this, "Selecione um cliente.", "Erro", JOptionPane.ERROR_MESSAGE);
+//            return;
+//        }
+//
+//        if (produtosModel.isEmpty()) {
+//            JOptionPane.showMessageDialog(this, "Adicione pelo menos um produto.", "Erro", JOptionPane.ERROR_MESSAGE);
+//            return;
+//        }
+//
+//        List<ProdutoVenda> produtosVenda = new ArrayList<>();
+//        for (int i = 0; i < produtosModel.size(); i++) {
+//            String descricao = produtosModel.getElementAt(i);
+//            String nomeProduto = descricao.split(" - ")[0];
+//
+//            Produto produto = vendaController.buscarProdutoPorNome(nomeProduto);
+//            if (produto == null) {
+//                JOptionPane.showMessageDialog(this, "Produto '" + nomeProduto + "' não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//
+//            ProdutoVenda pv = new ProdutoVenda(produto, 1); // ajuste se precisar
+//            produtosVenda.add(pv);
+//        }
+//
+//        int idVenda = vendaController.cadastrarVenda(cliente, produtosVenda);
+//
+//        if (idVenda > 0) {
+//            JOptionPane.showMessageDialog(this, "Venda finalizada com sucesso!\nID da Venda: " + idVenda, "Venda Concluída", JOptionPane.INFORMATION_MESSAGE);
+//            limparCampos();
+//        } else {
+//            JOptionPane.showMessageDialog(this, "Erro ao registrar a venda!", "Erro", JOptionPane.ERROR_MESSAGE);
+//        }
+//    }
 
     public static void main(String[] args) {
-        VendaView view = new VendaView();
-
-
-
-        view.addCliente("Maria Eduarda");
-
-        view.setVisible(true);
+        try {
+            Connection connection = ConexaoBD.conectar();
+            VendaController controller = new VendaController(connection);
+            VendaView view = new VendaView(controller);
+            view.setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erro ao conectar ao banco de dados!", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }
+

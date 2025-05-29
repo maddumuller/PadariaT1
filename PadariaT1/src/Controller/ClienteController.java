@@ -72,12 +72,7 @@ public class ClienteController {
     }
 
     public List<Cliente> listarClientes() {
-        try {
-            return Cliente.listarClientes(conn);
-        } catch (SQLException e) {
-            System.out.println("Erro ao listar clientes: " + e.getMessage());
-            return null;
-        }
+        return clienteDao.listarClientes();
     }
 
     public String removerCliente(String cpf) {

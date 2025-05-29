@@ -13,7 +13,7 @@ public class VendaController {
     private final VendaDao vendaDao;  // Changed from VendaDAO to VendaDao
 
     public VendaController(Connection connection) {
-        this.vendaDao = new VendaDao(connection);  // Changed from VendaDAO to VendaDao
+        this.vendaDao = new VendaDao(connection);
     }
 
     public int cadastrarVenda(Cliente cliente, List<ProdutoVenda> produtos) {
@@ -22,8 +22,9 @@ public class VendaController {
         venda.somarValorTotal();
         venda.setDataVenda(LocalDateTime.now());
         venda.setPago(false);
-        return vendaDao.inserir(venda);  // Changed from vendaDAO to vendaDao
+        return vendaDao.inserir(venda);
     }
+
 
     public List<Venda> listarVendas() {
         return vendaDao.listarTodas();  // Changed from vendaDAO to vendaDao

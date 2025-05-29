@@ -2,6 +2,8 @@ package Dao;
 
 import Model.Cliente;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ClienteDao {
@@ -30,6 +32,31 @@ public class ClienteDao {
                 pstmt.executeUpdate();
             }
         }
+
+    public List<Cliente> listarClientes() {
+        List<Cliente> clientes = new ArrayList<>();
+        String sql = "SELECT * FROM cliente";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Cliente cliente = new Cliente(
+                        rs.getString("nome"),
+                        rs.getString("cpf"),
+                        rs.getString("telefone"),
+                        rs.getInt("pontos")
+                );
+                cliente.setId(rs.getInt("id"));
+                clientes.add(cliente);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+
+        return clientes;
+    }
+
+}
 
 

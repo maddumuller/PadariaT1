@@ -24,7 +24,7 @@ public class MenuPrincipal extends JFrame {
     private ClienteController clienteController;
     private VendaController vendaController;
 
-    public MenuPrincipal() {;
+    public MenuPrincipal() {
         setTitle("Menu Principal - PadariaT1");
         setSize(450, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -35,9 +35,11 @@ public class MenuPrincipal extends JFrame {
             ProdutoDao produtoDao = new ProdutoDao(conexao);
             ClienteDao clienteDao = new ClienteDao(conexao);
             VendaController vendaDao = new VendaController(conexao);
+            TrocaPontosView trocaPontosView = new TrocaPontosView();
             this.produtoController = new ProdutoController(produtoDao);
             this.clienteController = new ClienteController(conexao);
             this.vendaController = new VendaController(conexao);
+            this.clienteController = new ClienteController(conexao);
 
         } catch (RuntimeException e) {
             JOptionPane.showMessageDialog(this, "Erro na conexão com o banco: " + e.getMessage());
@@ -85,7 +87,7 @@ public class MenuPrincipal extends JFrame {
         vendaButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(null, "Abrir tela de Venda...");
-                 VendaView vendaView = new VendaView();
+                 VendaView vendaView = new VendaView(vendaController);
                  vendaView.setVisible(true);
             }
         });

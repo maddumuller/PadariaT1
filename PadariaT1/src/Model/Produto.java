@@ -2,6 +2,13 @@ package Model;
 
 //Classes model sao presentes apenas a criacao das entidades (Fazer seguindo os padroes presentes no diagrama)
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Produto {
     private int id;
     private String nome;
@@ -12,7 +19,7 @@ public class Produto {
     private int custoPontos;
 
     public Produto() {
-        // Construtor vazio
+
     }
 
     // ===== Setters e Getters =====
@@ -65,6 +72,7 @@ public class Produto {
     public void setCustoPontos(int custoPontos) {
         this.custoPontos = custoPontos;
     }
+
 
     // ===== Métodos de Negócio =====
 

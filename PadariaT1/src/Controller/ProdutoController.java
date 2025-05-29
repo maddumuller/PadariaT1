@@ -1,8 +1,10 @@
 package Controller;
+
 import Dao.ProdutoDao;
 import Model.Produto;
+
 import java.sql.SQLException;
-//Classes Controller sao presentes apenas a criaçao da parte logica, logo as classes presentes em cada entidade(Fazer seguindo os padroes presentes no diagrama)
+import java.util.List;
 
 public class ProdutoController {
     private ProdutoDao produtoDAO;
@@ -10,7 +12,6 @@ public class ProdutoController {
     public ProdutoController(ProdutoDao produtoDAO) {
         this.produtoDAO = produtoDAO;
     }
-
 
     public void cadastrarProduto(String nome, double preco, String tipo, int quantidadeEstoque, boolean resgatavel, int custoPontos) throws SQLException {
         Produto produto = new Produto();
@@ -22,4 +23,8 @@ public class ProdutoController {
         produto.setCustoPontos(custoPontos);
         produtoDAO.adicionarProduto(produto);
     }
+    public List<Produto> listarProdutos() throws SQLException {
+        return produtoDAO.listarProdutos();
+    }
+
 }
