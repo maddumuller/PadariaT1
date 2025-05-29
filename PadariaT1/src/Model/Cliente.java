@@ -16,15 +16,13 @@ public class Cliente {
     private String telefone;
     private int pontos;
     //Construtor
-    public Cliente(String nome, String cpf, String telefone) {
+    public Cliente(String nome, String cpf, String telefone, int pontos) {
         this.nome = nome;
         this.cpf = cpf;
         this.telefone = telefone;
-        this.pontos = 0;
+        this.pontos = pontos;
     }
-    public Cliente(int id){
-        this.id = id;
-    }
+
     //Metodos
     public void adicionarPontos(double valor) {
         int pontosGanhos = (int) (valor / 10);
@@ -53,14 +51,14 @@ public class Cliente {
     }
 
     public void removerCliente(Connection conn) throws SQLException {
-        String sql = "DELETE FROM clientes WHERE cpf = ?";
+        String sql = "DELETE FROM cliente WHERE cpf = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, this.cpf);
             pstmt.executeUpdate();
         }
     }
     public void cadastrarCliente(Connection conn) throws SQLException {
-        String sql = "INSERT INTO clientes (nome, cpf, telefone, pontos) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO cliente (nome, cpf, telefone, pontos) VALUES (?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, this.nome);
             pstmt.setString(2, this.cpf);
@@ -70,19 +68,20 @@ public class Cliente {
         }
     }
     public static List<Cliente> listarClientes(Connection conn) throws SQLException {
-        List<Cliente> clientes = new ArrayList<>();
-        String sql = "SELECT * FROM clientes";
+        List<Cliente> cliente = new ArrayList<>();
+        String sql = "SELECT * FROM cliente";
         try (PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                Cliente cliente = new Cliente(rs.getString("nome"),
+                Cliente clientes = new Cliente(
+                        rs.getString("nome"),
                         rs.getString("cpf"),
-                        rs.getString("telefone"));
-                cliente.pontos = rs.getInt("pontos");
-                clientes.add(cliente);
+                        rs.getString("telefone"),
+                        rs.getInt("pontos")
+                );
             }
         }
-        return clientes;
+        return cliente;
     }
 
     //Aqui tao os gets

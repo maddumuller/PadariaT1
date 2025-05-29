@@ -1,25 +1,30 @@
 package View;
+import Controller.ClienteController;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import Controller.ClienteController;
-import Controller.ProdutoController;
-
+import java.awt.event.*;
+import java.sql.Connection;
 
 public class ClienteView extends JFrame {
-    private JTextField nomeField, cpfField, telefoneField, pontosField;
-    private JButton salvarButton, limparButton;
-    private ClienteController controller;
+    private JTextField nomeField;
+    private JTextField cpfField;
+    private JTextField telefoneField;
+    private JTextField pontosField;
+    private JButton cadastrarButton;
 
-    public ClienteView() {
+    private ClienteController clienteController;
+
+    public ClienteView(Connection connection) {
+        clienteController = new ClienteController(connection);
+
         setTitle("Cadastro de Cliente");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(400, 300);
-        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null); // centraliza janela
 
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(4, 2, 10, 10));
 
         panel.add(new JLabel("Nome:"));
         nomeField = new JTextField();
@@ -33,63 +38,57 @@ public class ClienteView extends JFrame {
         telefoneField = new JTextField();
         panel.add(telefoneField);
 
-        panel.add(new JLabel("Total de Pontos:"));
+        panel.add(new JLabel("Pontos:"));
         pontosField = new JTextField();
-        pontosField.setEditable(false);
-        pontosField.setText("0");
         panel.add(pontosField);
 
-        salvarButton = new JButton("Salvar");
-        limparButton = new JButton("Limpar");
+        cadastrarButton = new JButton("Cadastrar Cliente");
+        panel.add(cadastrarButton);
 
-        panel.add(salvarButton);
-        panel.add(limparButton);
+        // botão invisível para manter grid
+        panel.add(new JLabel(""));
 
         add(panel);
+
+        // Evento do botão
+        cadastrarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String nome = nomeField.getText();
+                String cpf = cpfField.getText();
+                String telefone = telefoneField.getText();
+                int pontos; // ver sobre pontos dps
+
+                try {
+
+                    pontos = Integer.parseInt(pontosField.getText());
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Pontos inválidos. Insira um número inteiro.");
+                    return;
+                }
+
+                String resultado = clienteController.cadastrarCliente(nome, cpf, telefone, pontos);
+                JOptionPane.showMessageDialog(null, resultado);
+                limparCampos();
+            }
+        });
+
+        setVisible(true);
     }
 
-    public String getNome() { return nomeField.getText(); }
-    public String getCpf() { return cpfField.getText(); }
-    public String getTelefone() { return telefoneField.getText(); }
-
-    public void limparCampos() {
+    private void limparCampos() {
         nomeField.setText("");
         cpfField.setText("");
         telefoneField.setText("");
     }
-
-    public void actionPerformed(ActionEvent e) {
-        try {
-            String nome = nomeField.getText();
-            String cpf = cpfField.getText();
-            String telefone = telefoneField.getText();
-            int pontos = Integer.parseInt(pontosField.getText());
-
-            controller.cadastrarCliente(nome,cpf,telefone, pontos);
-            JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
-
-            // Limpar os campos
-            nomeField.setText("");
-            cpfField.setText("");
-            telefoneField.setText("");
-            pontosField.setText("");
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Erro ao cadastrar: " + ex.getMessage());
-        }
-
-};
-
-
-    public void addSalvarListener(ActionListener listener) {
-        salvarButton.addActionListener(listener);
-    }
-
-    public void addLimparListener(ActionListener listener) {
-        limparButton.addActionListener(listener);
-    }
-
     public static void main(String[] args) {
-        new ClienteView().setVisible(true);
-    }
-}
+        try {
+            Connection conn = Dao.ConexaoBD.conectar();
+            new ClienteView(conn);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erro ao conectar com o banco de dados: " + e.getMessage());
+        }
+    }}
+
+

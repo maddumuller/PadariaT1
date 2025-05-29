@@ -191,8 +191,12 @@ public class VendaDao {
         Venda venda = new Venda();
         venda.setDataVenda(rs.getTimestamp("data").toLocalDateTime());
         venda.setPago(rs.getBoolean("is_pago"));
-        venda.setProdutos(new ArrayList<>()); // Idealmente, carregar produtos separados
-        venda.setCliente(new Cliente(rs.getInt("cliente_id"))); // ajuste conforme seu modelo real
+        venda.setProdutos(new ArrayList<>());
+        String nome = rs.getString("cliente_nome");
+        String cpf = rs.getString("cliente_cpf");
+        String telefone = rs.getString("cliente_telefone");
+        int pontos = rs.getInt("cliente_pontos");// Idealmente, carregar produtos separados
+        venda.setCliente(new Cliente("nome", "cpf", "telefone", pontos));
         venda.somarValorTotal(); // ou set diretamente, se armazenado
         return venda;
     }

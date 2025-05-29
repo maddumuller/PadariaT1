@@ -14,8 +14,8 @@ public class PadariaController {
         this.padaria = new Padaria();
     }
 
-    public String cadastrarCliente(String nome, String cpf, String telefone) {
-        Cliente cliente = new Cliente(nome, cpf, telefone);
+    public String cadastrarCliente(String nome, String cpf, String telefone, int pontos) {
+        Cliente cliente = new Cliente(nome, cpf, telefone, pontos);
         padaria.getClientes().add(cliente);
         return "Cliente cadastrado com sucesso: " + nome;
     }
@@ -102,5 +102,7 @@ public class PadariaController {
     public List<Venda> getVendas() {
         return padaria.getVendas();
     }
+
 }
+
 
