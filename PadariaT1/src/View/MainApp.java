@@ -46,6 +46,7 @@ public class MainApp {
     }
 
     public void abrirVendaView() {
+        vendaView.carregarClientes();
         vendaView.setVisible(true);
         menuPrincipal.setVisible(false);
     }
@@ -221,7 +222,7 @@ public class MainApp {
     }
 
     private class VendaView extends JFrame {
-        private JTextField clienteTextField;
+        private JComboBox<String> clienteComboBox;
         private JList<String> produtosList;
         private DefaultListModel<String> produtosModel;
         private JButton adicionarProdutoButton, finalizarVendaButton, removerProdutoButton;
@@ -240,8 +241,10 @@ public class MainApp {
             JPanel panel = new JPanel(new BorderLayout(10, 10));
             JPanel clientePanel = new JPanel(new BorderLayout());
             clientePanel.add(new JLabel("Cliente:"), BorderLayout.WEST);
-            clienteTextField = new JTextField();
-            clientePanel.add(clienteTextField, BorderLayout.CENTER);
+
+            // Inicializa o ComboBox sem dados
+            clienteComboBox = new JComboBox<>();
+            clientePanel.add(clienteComboBox, BorderLayout.CENTER);
             panel.add(clientePanel, BorderLayout.NORTH);
 
             produtosModel = new DefaultListModel<>();
@@ -275,11 +278,20 @@ public class MainApp {
                 if (index != -1) {
                     removerProduto(index);
                 } else {
-                    JOptionPane.showMessageDialog(this, "Selecione um produto para remover.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Selecione um produto para remover.", "Aviso",
+                            JOptionPane.WARNING_MESSAGE);
                 }
             });
             finalizarVendaButton.addActionListener(e -> finalizarVenda());
             voltarButton.addActionListener(e -> voltarParaMenuPrincipal(this));
+        }
+
+        // Novo método para carregar clientes
+        public void carregarClientes() {
+            clienteComboBox.removeAllItems();
+            for (Cliente c : clientes) {
+                clienteComboBox.addItem(c.getNome());
+            }
         }
 
         public void addProduto(String nome, double preco, int pts) {
@@ -306,32 +318,34 @@ public class MainApp {
         }
 
         private void finalizarVenda() {
-            String clienteNome = clienteTextField.getText().trim();
-            if (clienteNome.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Informe o nome do cliente.", "Erro", JOptionPane.ERROR_MESSAGE);
+            String clienteNome = (String) clienteComboBox.getSelectedItem();
+            if (clienteNome == null) {
+                JOptionPane.showMessageDialog(this, "Selecione um cliente.", "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            Cliente cliente = clientes.stream().filter(c -> c.getNome().equals(clienteNome)).findFirst().orElse(null);
-            if (cliente == null) {
-                cliente = new Cliente(clienteNome, 0);
-                clientes.add(cliente);
-                trocaPontosView.addCliente(clienteNome);
+
+            Cliente cliente = clientes.stream()
+                    .filter(c -> c.getNome().equals(clienteNome))
+                    .findFirst()
+                    .orElse(null);
+
+            if (cliente != null) {
+                cliente.setPontos(cliente.getPontos() + totalPontos);
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Venda finalizada para: " + clienteNome +
+                                "\nSubtotal: R$ " + String.format("%.2f", subtotal) +
+                                "\nPontos ganhos: " + totalPontos,
+                        "Venda Concluída",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+                limparCampos();
+                voltarParaMenuPrincipal(this);
             }
-            cliente.setPontos(cliente.getPontos() + totalPontos);
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Venda finalizada para: " + clienteNome +
-                            "\nSubtotal: R$ " + String.format("%.2f", subtotal) +
-                            "\nPontos ganhos: " + totalPontos,
-                    "Venda Concluída",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-            limparCampos();
-            voltarParaMenuPrincipal(this);
         }
 
         public void limparCampos() {
-            clienteTextField.setText("");
+            clienteComboBox.setSelectedIndex(-1);
             produtosModel.clear();
             precos.clear();
             pontos.clear();
