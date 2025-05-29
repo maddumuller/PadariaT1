@@ -1,6 +1,6 @@
 package Model;
 
-//Classes model sao presentes apenas a criaçao das entidades(Fazer seguindo os padroes presentes no diagrama)
+//Classes model sao presentes apenas a criacao das entidades (Fazer seguindo os padroes presentes no diagrama)
 
 public class Produto {
     private int id;
@@ -12,47 +12,61 @@ public class Produto {
     private int custoPontos;
 
     public Produto() {
+        // Construtor vazio
+    }
 
+    // ===== Setters e Getters =====
+
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
     }
     public void setNome(String nome) {
         this.nome = nome;
     }
-    public String getNome() {
-        return nome;
+
+    public double getPreco() {
+        return preco;
     }
     public void setPreco(double preco) {
         this.preco = preco;
     }
-    public double getPreco() {
-        return preco;
+
+    public String getTipo() {
+        return tipo;
     }
     public void setTipo(String tipo) {
         this.tipo = tipo;
     }
-    public String getTipo() {
-        return tipo;
-    }
 
-    public void setQuantidadeEstoque(int quantidadeEstoque) {
-        this.quantidadeEstoque = quantidadeEstoque;
-    }
     public int getQuantidadeEstoque() {
         return quantidadeEstoque;
     }
-
-    public void setResgatavel(boolean resgatavel) {
-        this.resgatavel = resgatavel;
+    public void setQuantidadeEstoque(int quantidadeEstoque) {
+        this.quantidadeEstoque = quantidadeEstoque;
     }
+
     public boolean getResgatavel() {
         return resgatavel;
     }
-
-    public void setCustoPontos(int custoPontos) {
-        this.custoPontos = custoPontos;
+    public void setResgatavel(boolean resgatavel) {
+        this.resgatavel = resgatavel;
     }
+
     public int getCustoPontos() {
         return custoPontos;
     }
+    public void setCustoPontos(int custoPontos) {
+        this.custoPontos = custoPontos;
+    }
+
+    // ===== Métodos de Negócio =====
 
     public void adicionarEstoque(int qtd) {
         this.quantidadeEstoque += qtd;
@@ -67,7 +81,7 @@ public class Produto {
     }
 
     public void criarProduto() {
-        //
+        // Método vazio, a ser tratado no DAO se necessário
     }
 
     public void editarProduto(String nome, double preco, String tipo, int quantidadeEstoque, boolean resgatavel, int custoPontos) {
@@ -80,7 +94,7 @@ public class Produto {
     }
 
     public void removerProduto() {
-        //  método vazio a ser tratado no DAO
+        // Método vazio, a ser tratado no DAO se necessário
     }
 
     public void visualizarProduto() {
@@ -93,11 +107,9 @@ public class Produto {
 
     @Override
     public String toString() {
-        return String.format("Produto: %s | Preço: R$%.2f | Tipo: %s | Estoque: %d | Resgatável: %s | Custo em Pontos: %d",
-                nome, preco, tipo, quantidadeEstoque, resgatavel ? "Sim" : "Não", custoPontos);
-    }
-
-    public int getId() {
-        return id;
+        return String.format(
+                "Produto: %s | Preço: R$%.2f | Tipo: %s | Estoque: %d | Resgatável: %s | Custo em Pontos: %d",
+                nome, preco, tipo, quantidadeEstoque, resgatavel ? "Sim" : "Não", custoPontos
+        );
     }
 }
