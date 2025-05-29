@@ -15,7 +15,12 @@ public class Cliente {
     private String cpf;
     private String telefone;
     private int pontos;
-    //Construtor
+
+    // Construtor vazio necessário
+    public Cliente() {
+    }
+
+    // Construtor completo
     public Cliente(String nome, String cpf, String telefone, int pontos) {
         this.nome = nome;
         this.cpf = cpf;

@@ -1,87 +1,44 @@
 package Model;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Venda {
+    private int id;
     private Cliente cliente;
-    private List<ProdutoVenda> produtos;
     private boolean isPago;
     private double valorTotal;
     private LocalDateTime dataVenda;
+    private List<ProdutoVenda> produtos;
 
+    // Construtor padrão
     public Venda() {
-        this.produtos = new ArrayList<>();
-        this.isPago = false;
-        this.valorTotal = 0.0;
-        this.dataVenda = LocalDateTime.now();
     }
 
+    // Construtor com cliente
     public Venda(Cliente cliente) {
-        this();
         this.cliente = cliente;
-    }
-
-    public void registrarVenda(Cliente cliente, List<ProdutoVenda> produtos) {
-        this.cliente = cliente;
-        this.produtos = new ArrayList<>(produtos);
+        this.isPago = false;
         this.dataVenda = LocalDateTime.now();
-        somarValorTotal();
-        atualizarEstoqueProdutos();
-        acumularPontos();
     }
 
+    // Método para somar valor total dos produtos
     public void somarValorTotal() {
         this.valorTotal = 0.0;
-        for (ProdutoVenda produtoVenda : produtos) {
-            this.valorTotal += produtoVenda.calcularSubtotal();
-        }
-    }
-
-    public void atualizarEstoqueProdutos() {
-        for (ProdutoVenda produtoVenda : produtos) {
-            Produto produto = produtoVenda.getProduto();
-            int quantidadeVendida = produtoVenda.getQuantidade();
-            if (produto.getQuantidadeEstoque() >= quantidadeVendida) {
-                produto.removerEstoque(quantidadeVendida);
-            } else {
-                throw new IllegalStateException(
-                        "Estoque insuficiente para o produto: " + produto.getNome() +
-                                ". Disponível: " + produto.getQuantidadeEstoque() +
-                                ", Solicitado: " + quantidadeVendida
-                );
+        if (produtos != null) {
+            for (ProdutoVenda produtoVenda : produtos) {
+                this.valorTotal += produtoVenda.getSubtotal();
             }
         }
     }
 
-    public void acumularPontos() {
-        if (cliente != null && isPago) {
-            int pontosGanhos = (int) (valorTotal / 10.0);
-            cliente.adicionarPontos(pontosGanhos);
-        }
+    // Getters e Setters
+    public int getId() {
+        return id;
     }
 
-    public void marcarComoPago() {
-        this.isPago = true;
-        acumularPontos();
-    }
-
-    public void adicionarProduto(Produto produto, int quantidade) {
-        for (ProdutoVenda produtoVenda : produtos) {
-            if (produtoVenda.getProduto().equals(produto)) {
-                produtoVenda.setQuantidade(produtoVenda.getQuantidade() + quantidade);
-                somarValorTotal();
-                return;
-            }
-        }
-        produtos.add(new ProdutoVenda(produto, quantidade));
-        somarValorTotal();
-    }
-
-    public void removerProduto(Produto produto) {
-        produtos.removeIf(pv -> pv.getProduto().equals(produto));
-        somarValorTotal();
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Cliente getCliente() {
@@ -92,28 +49,20 @@ public class Venda {
         this.cliente = cliente;
     }
 
-    public List<ProdutoVenda> getProdutos() {
-        return new ArrayList<>(produtos);
-    }
-
-    public void setProdutos(List<ProdutoVenda> produtos) {
-        this.produtos = new ArrayList<>(produtos);
-        somarValorTotal();
-    }
-
     public boolean isPago() {
         return isPago;
     }
 
     public void setPago(boolean pago) {
-        this.isPago = pago;
-        if (pago) {
-            acumularPontos();
-        }
+        isPago = pago;
     }
 
     public double getValorTotal() {
         return valorTotal;
+    }
+
+    public void setValorTotal(double valorTotal) {
+        this.valorTotal = valorTotal;
     }
 
     public LocalDateTime getDataVenda() {
@@ -124,21 +73,30 @@ public class Venda {
         this.dataVenda = dataVenda;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== VENDA ===\n");
-        sb.append("Cliente: ").append(cliente != null ? cliente.getNome() : "N/A").append("\n");
-        sb.append("Data: ").append(dataVenda).append("\n");
-        sb.append("Produtos:\n");
-        for (ProdutoVenda pv : produtos) {
-            sb.append("  - ").append(pv.getProduto().getNome())
-                    .append(" x").append(pv.getQuantidade())
-                    .append(" = R$ ").append(String.format("%.2f", pv.calcularSubtotal()))
-                    .append("\n");
+    public List<ProdutoVenda> getProdutos() {
+        return produtos;
+    }
+
+    public void setProdutos(List<ProdutoVenda> produtos) {
+        this.produtos = produtos;
+    }
+
+    // Método para visualizar venda
+    public void visualizarVenda() {
+        System.out.println("=== VENDA ===");
+        System.out.println("ID: " + id);
+        System.out.println("Cliente: " + (cliente != null ? cliente.getNome() : "N/A"));
+        System.out.println("Data: " + dataVenda);
+        System.out.println("Valor Total: R$ " + String.format("%.2f", valorTotal));
+        System.out.println("Status: " + (isPago ? "PAGO" : "PENDENTE"));
+
+        if (produtos != null && !produtos.isEmpty()) {
+            System.out.println("\n=== PRODUTOS ===");
+            for (ProdutoVenda pv : produtos) {
+                System.out.println("- " + pv.getProduto().getNome() +
+                        " | Qtd: " + pv.getQuantidade() +
+                        " | Subtotal: R$ " + String.format("%.2f", pv.getSubtotal()));
+            }
         }
-        sb.append("Valor Total: R$ ").append(String.format("%.2f", valorTotal)).append("\n");
-        sb.append("Status: ").append(isPago ? "PAGO" : "PENDENTE").append("\n");
-        return sb.toString();
     }
 }
