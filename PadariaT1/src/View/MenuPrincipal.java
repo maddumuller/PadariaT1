@@ -5,6 +5,8 @@ import Controller.ProdutoController;
 
 import javax.swing.*;
 import java.awt.event.*;
+
+import Controller.VendaController;
 import Dao.ConexaoBD;
 import Dao.ProdutoDao;
 
@@ -19,6 +21,7 @@ public class MenuPrincipal extends JFrame {
     private Connection conexao;
     private ProdutoController produtoController;
     private ClienteController clienteController;
+    private VendaController vendaController;
 
     public MenuPrincipal() {
         setTitle("Menu Principal - PadariaT1");
@@ -74,12 +77,14 @@ public class MenuPrincipal extends JFrame {
                 // vendaView.setVisible(true);
             }
         });
-
-        sairButton.addActionListener(new ActionListener() {
+        vendaButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                System.exit(0);
+                JOptionPane.showMessageDialog(null, "Abrir tela de Venda...");
+                 VendaView vendaView = new VendaView();
+                 vendaView.setVisible(true);
             }
         });
+
     }
 
 
