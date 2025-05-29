@@ -10,7 +10,11 @@ import Controller.VendaController;
 import Dao.ClienteDao;
 import Dao.ConexaoBD;
 import Dao.ProdutoDao;
+import Model.Cliente;
+import Model.Produto;
+
 import java.sql.Connection;
+import java.util.List;
 
 public class MenuPrincipal extends JFrame {
 
@@ -91,12 +95,21 @@ public class MenuPrincipal extends JFrame {
                 dispose();
             }
         });
-        trocaPontosButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                 TrocaPontosView trocaPontosView = new TrocaPontosView();
-                trocaPontosView.setVisible(true);
+
+        trocaPontosButton.addActionListener(e -> {
+            try {
+                List<Cliente> clientes = clienteController.listarClientes();
+                List<Produto> produtos = produtoController.listarProdutos();
+                TrocaPontosView view = new TrocaPontosView(clientes, produtos);
+                view.setVisible(true);
+                dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Erro ao abrir troca de pontos: " + ex.getMessage());
             }
         });
+
+
+
         sairButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 System.exit(0);

@@ -90,7 +90,14 @@ public class VendaView extends JFrame {
         removerProdutoButton.addActionListener(e -> {
             int index = produtosList.getSelectedIndex();
             if (index != -1) {
-                removerProduto(index);
+                int confirm = JOptionPane.showConfirmDialog(this,
+                        "Deseja remover este produto?",
+                        "Confirmação",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (confirm == JOptionPane.YES_OPTION) {
+                    removerProduto(index);
+                }
             } else {
                 JOptionPane.showMessageDialog(this, "Selecione um produto para remover.", "Aviso", JOptionPane.WARNING_MESSAGE);
             }
@@ -113,17 +120,19 @@ public class VendaView extends JFrame {
 
     public void addProdutoVenda(ProdutoVenda pv) {
         double subtotalProduto = pv.calcularSubtotal();
-        int pts = vendaController.getPontosPorProduto(pv.getProduto());
+
+        // Corrigido: calcula os pontos com base na quantidade
+        int pontosProduto = vendaController.getPontosPorProduto(pv.getProduto()) * pv.getQuantidade();
 
         produtosModel.addElement(pv.getProduto().getNome() +
                 " x" + pv.getQuantidade() +
                 " - R$ " + String.format("%.2f", subtotalProduto) +
-                " (+" + pts + " pts)");
+                " (+" + pontosProduto + " pts)");
 
         produtosVenda.add(pv);
-        pontos.add(pts);
+        pontos.add(pontosProduto);
         subtotal += subtotalProduto;
-        totalPontos += pts;
+        totalPontos += pontosProduto;
         atualizarInfo();
     }
 
@@ -179,6 +188,7 @@ public class VendaView extends JFrame {
         }
     }
 }
+
 
 
 

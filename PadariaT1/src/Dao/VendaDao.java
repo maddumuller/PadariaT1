@@ -34,12 +34,14 @@ public class VendaDao {
     }
 
     public boolean registrarVenda(Venda venda) {
-        String sql = "INSERT INTO venda (cliente_id, is_pago, valor_total, data_venda) VALUES (?, ?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO venda (cliente_id, is_pago, valor_total, data_venda, pontos_gerados) " +
+                "VALUES (?, ?, ?, ?, ?) RETURNING id";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, venda.getCliente().getId());
             stmt.setBoolean(2, venda.isPago());
             stmt.setDouble(3, venda.getValorTotal());
             stmt.setTimestamp(4, Timestamp.valueOf(venda.getDataVenda()));
+            stmt.setInt(5, venda.getPontosGerados());
 
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -197,13 +199,14 @@ public class VendaDao {
 
     // Métodos auxiliares para gerenciar os produtos da venda
     private void inserirProdutosDaVenda(int vendaId, List<ProdutoVenda> produtos) {
-        String sql = "INSERT INTO produto_venda (venda_id, produto_id, quantidade) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO venda_produto (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";
         try {
             for (ProdutoVenda produtoVenda : produtos) {
                 try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                     stmt.setInt(1, vendaId);
                     stmt.setInt(2, produtoVenda.getProduto().getId());
                     stmt.setInt(3, produtoVenda.getQuantidade());
+                    stmt.setDouble(4, produtoVenda.getProduto().getPreco()); // ← Aqui está o preço unitário
                     stmt.executeUpdate();
                 }
             }

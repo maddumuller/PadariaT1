@@ -36,28 +36,28 @@ public class DatabaseInitializer {
                 stmt.executeUpdate(tabelaCliente);
                 System.out.println("Tabela cliente criado com sucesso!");
 
-                String tabelaVenda = "CREATE TABLE IF NOT EXISTS venda("+
-                        "id SERIAL PRIMARY KEY,"+
-                        "cliente_id INT,"+
-                        "data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"+
-                        "valor_total NUMERIC(10,2) NOT NULL,"+
-                        "pontos_gerados INT NOT NULL,"+
-                        "is_pago BOOLEAN NOT NULL DEFAULT false,"+   // <<< NOVA LINHA
-                        "FOREIGN KEY (cliente_id) REFERENCES Cliente(id)"+
+                String tabelaVenda = "CREATE TABLE IF NOT EXISTS venda (" +
+                        "id SERIAL PRIMARY KEY," +
+                        "cliente_id INT," +
+                        "data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                        "valor_total NUMERIC(10,2) NOT NULL," +
+                        "pontos_gerados INT NOT NULL," +
+                        "is_pago BOOLEAN NOT NULL DEFAULT false," +
+                        "FOREIGN KEY (cliente_id) REFERENCES cliente(id)" +
                         ");";
 
                 stmt.executeUpdate(tabelaVenda);
                 System.out.println("Tabela venda criado com sucesso!");
 
-                String tabelaVendaProduto = "CREATE TABLE IF NOT EXISTS Venda_Produto ("+
-                        "venda_id INT NOT NULL,"+
-                        "produto_id INT NOT NULL,"+
-                        "quantidade INT NOT NULL,"+
-                        "preco_unitario NUMERIC(10,2) NOT NULL,"+
-                        "PRIMARY KEY (venda_id, produto_id),"+
-                        "FOREIGN KEY (venda_id) REFERENCES Venda(id),"+
-                        "FOREIGN KEY (produto_id) REFERENCES Produto(id)"+
-                ");";
+                String tabelaVendaProduto = "CREATE TABLE IF NOT EXISTS venda_produto (" +
+                        "venda_id INT NOT NULL," +
+                        "produto_id INT NOT NULL," +
+                        "quantidade INT NOT NULL," +
+                        "preco_unitario NUMERIC(10,2) NOT NULL," +
+                        "PRIMARY KEY (venda_id, produto_id)," +
+                        "FOREIGN KEY (venda_id) REFERENCES venda(id)," +
+                        "FOREIGN KEY (produto_id) REFERENCES produto(id)" +
+                        ");";
                 stmt.executeUpdate(tabelaVendaProduto);
                 System.out.println("Tabela venda produto criado com sucesso!");
 

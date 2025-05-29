@@ -38,9 +38,9 @@ public class VendaController {
         return nomes;
     }
 
-    // Retorna pontos por produto (ex: 1 ponto por R$10)
+
     public int getPontosPorProduto(Produto produto) {
-        return (int) produto.getPreco() / 10;
+        return (int) produto.getPreco();
     }
 
     // Diálogo para escolher produto e quantidade

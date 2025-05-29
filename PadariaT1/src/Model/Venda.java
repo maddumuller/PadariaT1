@@ -10,6 +10,7 @@ public class Venda {
     private double valorTotal;
     private LocalDateTime dataVenda;
     private List<ProdutoVenda> produtos;
+    private int pontosGerados;  // Novo atributo para armazenar pontos gerados
 
     // Construtor padrão
     public Venda() {
@@ -82,6 +83,14 @@ public class Venda {
         somarValorTotal();  // Atualiza valor total automaticamente
     }
 
+    public int getPontosGerados() {
+        return pontosGerados;
+    }
+
+    public void setPontosGerados(int pontosGerados) {
+        this.pontosGerados = pontosGerados;
+    }
+
     // Método para visualizar venda
     public void visualizarVenda() {
         System.out.println("=== VENDA ===");
@@ -89,6 +98,7 @@ public class Venda {
         System.out.println("Cliente: " + (cliente != null ? cliente.getNome() : "N/A"));
         System.out.println("Data: " + dataVenda);
         System.out.println("Valor Total: R$ " + String.format("%.2f", valorTotal));
+        System.out.println("Pontos Gerados: " + pontosGerados);
         System.out.println("Status: " + (isPago ? "PAGO" : "PENDENTE"));
 
         if (produtos != null && !produtos.isEmpty()) {
@@ -109,7 +119,9 @@ public class Venda {
                 ", isPago=" + isPago +
                 ", valorTotal=" + valorTotal +
                 ", dataVenda=" + dataVenda +
+                ", pontosGerados=" + pontosGerados +
                 ", produtos=" + produtos +
                 '}';
     }
 }
+
