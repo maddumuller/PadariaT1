@@ -1,6 +1,6 @@
 package Model;
 
-//Classes model sao presentes apenas a criaçao das entidades(Fazer seguindo os padroes presentes no diagrama)
+// Classes model sao presentes apenas a criacao das entidades (Fazer seguindo os padroes presentes no diagrama)
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,21 +15,25 @@ public class Cliente {
     private String cpf;
     private String telefone;
     private int pontos;
-    //Construtor
-    public Cliente(String nome, String cpf, String telefone) {
+
+    // Construtor vazio necessário
+    public Cliente() {
+    }
+
+    // Construtor completo
+    public Cliente(String nome, String cpf, String telefone, int pontos) {
         this.nome = nome;
         this.cpf = cpf;
         this.telefone = telefone;
-        this.pontos = 0;
+        this.pontos = pontos;
     }
-    public Cliente(int id){
-        this.id = id;
-    }
-    //Metodos
+
+    // Metodos de negócio
     public void adicionarPontos(double valor) {
         int pontosGanhos = (int) (valor / 10);
         this.pontos += pontosGanhos;
     }
+
     public void trocarPontos(Produto produto) {
         if (!produto.isResgatavel()) {
             throw new IllegalStateException("Produto não é resgatável.");
@@ -39,6 +43,7 @@ public class Cliente {
         }
         this.pontos -= produto.getCustoPontos();
     }
+
     public void visualizarCliente() {
         System.out.println("Nome: " + nome);
         System.out.println("CPF: " + cpf);
@@ -53,14 +58,15 @@ public class Cliente {
     }
 
     public void removerCliente(Connection conn) throws SQLException {
-        String sql = "DELETE FROM clientes WHERE cpf = ?";
+        String sql = "DELETE FROM cliente WHERE cpf = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, this.cpf);
             pstmt.executeUpdate();
         }
     }
+
     public void cadastrarCliente(Connection conn) throws SQLException {
-        String sql = "INSERT INTO clientes (nome, cpf, telefone, pontos) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO cliente (nome, cpf, telefone, pontos) VALUES (?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, this.nome);
             pstmt.setString(2, this.cpf);
@@ -69,23 +75,31 @@ public class Cliente {
             pstmt.executeUpdate();
         }
     }
+
     public static List<Cliente> listarClientes(Connection conn) throws SQLException {
         List<Cliente> clientes = new ArrayList<>();
-        String sql = "SELECT * FROM clientes";
+        String sql = "SELECT * FROM cliente";
         try (PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
-                Cliente cliente = new Cliente(rs.getString("nome"),
+                Cliente cliente = new Cliente(
+                        rs.getString("nome"),
                         rs.getString("cpf"),
-                        rs.getString("telefone"));
-                cliente.pontos = rs.getInt("pontos");
+                        rs.getString("telefone"),
+                        rs.getInt("pontos")
+                );
+                cliente.setId(rs.getInt("id")); // Garante que o ID seja atribuído
                 clientes.add(cliente);
             }
         }
         return clientes;
     }
 
-    //Aqui tao os gets
+    // ===== GETTERS =====
+    public int getId() {
+        return id;
+    }
+
     public String getNome() {
         return nome;
     }
@@ -102,7 +116,24 @@ public class Cliente {
         return pontos;
     }
 
-    public int getId() {
-        return id;
+    // ===== SETTERS =====
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
+    public void setPontos(int pontos) {
+        this.pontos = pontos;
     }
 }

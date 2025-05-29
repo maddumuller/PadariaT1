@@ -1,8 +1,5 @@
 package Controller;
 
-//Classes Controller sao presentes apenas a criaçao da parte logica, logo as classes presentes em cada entidade(Fazer seguindo os padroes presentes no diagrama)
-
-
 import Model.*;
 
 import java.util.List;
@@ -14,14 +11,20 @@ public class PadariaController {
         this.padaria = new Padaria();
     }
 
-    public String cadastrarCliente(String nome, String cpf, String telefone) {
-        Cliente cliente = new Cliente(nome, cpf, telefone);
+    public String cadastrarCliente(String nome, String cpf, String telefone, int pontos) {
+        Cliente cliente = new Cliente(nome, cpf, telefone, pontos);
         padaria.getClientes().add(cliente);
         return "Cliente cadastrado com sucesso: " + nome;
     }
 
     public String cadastrarProduto(String nome, double preco, String tipo, int quantidadeEstoque, boolean resgatavel, int custoPontos) {
         Produto produto = new Produto();
+        produto.setNome(nome);
+        produto.setPreco(preco);
+        produto.setTipo(tipo);
+        produto.setQuantidadeEstoque(quantidadeEstoque);
+        produto.setResgatavel(resgatavel);
+        produto.setCustoPontos(custoPontos);
         padaria.getProdutos().add(produto);
         return "Produto cadastrado com sucesso: " + nome;
     }
@@ -32,6 +35,7 @@ public class PadariaController {
             throw new IllegalArgumentException("Cliente não encontrado com CPF: " + cpfCliente);
         }
 
+        // Verifica o estoque de todos os produtos antes de registrar a venda
         for (ProdutoVenda pv : produtosVenda) {
             Produto produto = pv.getProduto();
             if (produto.getQuantidadeEstoque() < pv.getQuantidade()) {
@@ -39,9 +43,17 @@ public class PadariaController {
             }
         }
 
+        // Cria a venda, define os produtos e calcula o valor total
         Venda venda = new Venda(cliente);
-        venda.registrarVenda(cliente, produtosVenda);
+        venda.setProdutos(produtosVenda);
+        venda.somarValorTotal();
         padaria.getVendas().add(venda);
+
+        // Atualiza o estoque dos produtos
+        for (ProdutoVenda pv : produtosVenda) {
+            pv.getProduto().removerEstoque(pv.getQuantidade());
+        }
+
         return "Venda registrada com sucesso! Valor total: " + venda.getValorTotal();
     }
 
@@ -103,4 +115,3 @@ public class PadariaController {
         return padaria.getVendas();
     }
 }
-

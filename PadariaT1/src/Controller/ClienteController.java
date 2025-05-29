@@ -1,6 +1,7 @@
 package Controller;
 
 //Classes Controller sao presentes apenas a criaçao da parte logica, logo as classes presentes em cada entidade(Fazer seguindo os padroes presentes no diagrama)
+import Dao.ClienteDao;
 import Model.Cliente;
 import Model.Produto;
 
@@ -10,14 +11,16 @@ import java.util.List;
 
 public class ClienteController {
     private Connection conn;
+    private ClienteDao clienteDao;
 
     public ClienteController(Connection conn) {
         this.conn = conn;
+        this.clienteDao = new ClienteDao(conn);
     }
 
     public String cadastrarCliente(String nome, String cpf, String telefone, int pontos) {
         try {
-            Cliente cliente = new Cliente(nome, cpf, telefone);
+            Cliente cliente = new Cliente(nome, cpf, telefone, pontos);
             cliente.cadastrarCliente(conn);
             return "Cliente cadastrado com sucesso!";
         } catch (SQLException e) {
@@ -27,8 +30,8 @@ public class ClienteController {
 
     public Cliente buscarClientePorCpf(String cpf) {
         try {
-            List<Cliente> clientes = Cliente.listarClientes(conn);
-            for (Cliente c : clientes) {
+            List<Cliente> cliente = Cliente.listarClientes(conn);
+            for (Cliente c : cliente) {
                 if (c.getCpf().equals(cpf)) {
                     return c;
                 }
@@ -45,7 +48,7 @@ public class ClienteController {
 
         cliente.adicionarPontos(valorCompra);
         try {
-            atualizarPontos(cliente);
+            clienteDao.atualizarPontos(cliente);
             return "Pontos adicionados com sucesso.";
         } catch (SQLException e) {
             return "Erro ao atualizar pontos: " + e.getMessage();
@@ -58,7 +61,7 @@ public class ClienteController {
 
         try {
             cliente.trocarPontos(produto);
-            atualizarPontos(cliente);
+            clienteDao.atualizarPontos(cliente);
             produto.removerEstoque(1);
             return "Troca de pontos realizada com sucesso.";
         } catch (IllegalStateException e) {
@@ -88,12 +91,5 @@ public class ClienteController {
         }
     }
 
-    private void atualizarPontos(Cliente cliente) throws SQLException {
-        String sql = "UPDATE clientes SET pontos = ? WHERE cpf = ?";
-        try (var pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, cliente.getPontos());
-            pstmt.setString(2, cliente.getCpf());
-            pstmt.executeUpdate();
-        }
-    }
+
 }

@@ -10,7 +10,8 @@ public class ClienteDao {
     public ClienteDao(Connection connection) {
         this.connection = connection;
     }
-    public void AdicionarCliente(Cliente cliente) throws SQLException{
+
+    public void AdicionarCliente(Cliente cliente) throws SQLException {
         String sql = "INSERT INTO cliente(id, nome, CPF, tELEFONE, pontos) VALUES (?,?,?,?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, cliente.getNome());
@@ -21,4 +22,14 @@ public class ClienteDao {
             stmt.executeUpdate();
         }
     }
-}
+        public void atualizarPontos(Cliente cliente) throws SQLException {
+            String update = "UPDATE cliente SET pontos = ? WHERE cpf = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(update)) {
+                pstmt.setInt(1, cliente.getPontos());
+                pstmt.setString(2, cliente.getCpf());
+                pstmt.executeUpdate();
+            }
+        }
+        }
+
+
