@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import Controller.ClienteController;
+import Controller.ProdutoController;
 
 public class ClienteView extends JFrame {
     private MenuPrincipal menuPrincipal;
@@ -14,6 +15,7 @@ public class ClienteView extends JFrame {
 
     // Construtor que recebe a tela principal
     public ClienteView() {
+
         this.menuPrincipal = menuPrincipal;
 
         setTitle("Cadastro de Cliente");
