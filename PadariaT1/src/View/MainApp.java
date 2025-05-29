@@ -1,5 +1,7 @@
 package View;
 
+import Controller.ClienteController;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -7,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainApp {
+
     private ClienteView clienteView;
     private MenuPrincipal menuPrincipal;
     private ProdutoView produtoView;
@@ -161,7 +164,7 @@ public class MainApp {
         public void setQuantidade(int quantidade) { this.quantidade = quantidade; }
     }
 
-    // Classe para representar clientes
+    //Classe para representar clientes
     private class Cliente {
         private String nome;
         private int pontos;

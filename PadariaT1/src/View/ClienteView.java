@@ -16,7 +16,6 @@ public class ClienteView extends JFrame {
     // Construtor que recebe a tela principal
     public ClienteView() {
 
-        this.menuPrincipal = menuPrincipal;
 
         setTitle("Cadastro de Cliente");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -90,10 +89,8 @@ public class ClienteView extends JFrame {
     }
 
     private void voltarParaMenuPrincipal() {
-        dispose(); // Fecha a janela atual
-        if (menuPrincipal != null) {
-            menuPrincipal.setVisible(true); // Mostra a tela principal
-        }
+            menuPrincipal.setVisible(true);
+            dispose();
     }
 
     private void limparCampos() {
@@ -106,7 +103,5 @@ public class ClienteView extends JFrame {
     public void setController(ClienteController controller) {
         this.controller = controller;
     }
-
-    // Removido o main(), pois essa tela deve ser chamada pela MenuPrincipal
 }
 
