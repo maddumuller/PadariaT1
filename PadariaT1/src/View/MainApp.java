@@ -12,7 +12,7 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainApp extends Component {
+public class MainApp {
 
     private ClienteView clienteView;
     private MenuPrincipal menuPrincipal;
@@ -25,10 +25,6 @@ public class MainApp extends Component {
     private ProdutoController produtoController;
 
     public MainApp() {
-        menuPrincipal.setTitle("Menu Principal - PadariaT1");
-        menuPrincipal.setSize(400, 300);
-        menuPrincipal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        menuPrincipal.setLayout(null);
         // Inicializa listas em memória para produtos e clientes
 //        produtos = new ArrayList<>();
 //        clientes = new ArrayList<>();
@@ -38,16 +34,16 @@ public class MainApp extends Component {
 //        produtos.add(new Produto("Pão Francês", 5.00, "Pão", 100, true, 50));
 //        produtos.add(new Produto("Bolo de Chocolate", 20.00, "Bolo", 10, true, 200));
 
-        try {
-            this.conexao = ConexaoBD.conectar();
-            ProdutoDao produtoDao = new ProdutoDao(conexao);
-            this.produtoController = new ProdutoController(produtoDao);
-            // inicialize seu ClienteController aqui, se necessário
-            // this.clienteController = new ClienteController(...);
-        } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(this, "Erro na conexão com o banco: " + e.getMessage());
-            System.exit(1);
-        }
+//        try {
+//            this.conexao = ConexaoBD.conectar();
+//            ProdutoDao produtoDao = new ProdutoDao(conexao);
+//            this.produtoController = new ProdutoController(produtoDao);
+//            // inicialize seu ClienteController aqui, se necessário
+//            // this.clienteController = new ClienteController(...);
+//        } catch (RuntimeException e) {
+//            JOptionPane.showMessageDialog(this, "Erro na conexão com o banco: " + e.getMessage());
+//            System.exit(1);
+//        }
 
 
 
