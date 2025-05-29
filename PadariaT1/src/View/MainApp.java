@@ -1,6 +1,10 @@
 package View;
 
 import Controller.ClienteController;
+import Controller.ProdutoController;
+import Dao.ConexaoBD;
+import Dao.ProdutoDao;
+import java.sql.Connection;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,7 +12,7 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainApp {
+public class MainApp extends Component {
 
     private ClienteView clienteView;
     private MenuPrincipal menuPrincipal;
@@ -17,16 +21,35 @@ public class MainApp {
     private TrocaPontosView trocaPontosView;
     private List<Produto> produtos;
     private List<Cliente> clientes;
+    private Connection conexao;
+    private ProdutoController produtoController;
 
     public MainApp() {
+        menuPrincipal.setTitle("Menu Principal - PadariaT1");
+        menuPrincipal.setSize(400, 300);
+        menuPrincipal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        menuPrincipal.setLayout(null);
         // Inicializa listas em memória para produtos e clientes
-        produtos = new ArrayList<>();
-        clientes = new ArrayList<>();
-        // Adiciona alguns dados de exemplo
-        clientes.add(new Cliente("Cliente Exemplo 1", 100));
-        clientes.add(new Cliente("Cliente Exemplo 2", 50));
-        produtos.add(new Produto("Pão Francês", 5.00, "Pão", 100, true, 50));
-        produtos.add(new Produto("Bolo de Chocolate", 20.00, "Bolo", 10, true, 200));
+//        produtos = new ArrayList<>();
+//        clientes = new ArrayList<>();
+//        // Adiciona alguns dados de exemplo
+//        clientes.add(new Cliente("Cliente Exemplo 1", 100));
+//        clientes.add(new Cliente("Cliente Exemplo 2", 50));
+//        produtos.add(new Produto("Pão Francês", 5.00, "Pão", 100, true, 50));
+//        produtos.add(new Produto("Bolo de Chocolate", 20.00, "Bolo", 10, true, 200));
+
+        try {
+            this.conexao = ConexaoBD.conectar();
+            ProdutoDao produtoDao = new ProdutoDao(conexao);
+            this.produtoController = new ProdutoController(produtoDao);
+            // inicialize seu ClienteController aqui, se necessário
+            // this.clienteController = new ClienteController(...);
+        } catch (RuntimeException e) {
+            JOptionPane.showMessageDialog(this, "Erro na conexão com o banco: " + e.getMessage());
+            System.exit(1);
+        }
+
+
 
         // Inicializa as telas
         clienteView = new ClienteView();
