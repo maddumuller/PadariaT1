@@ -1,57 +1,56 @@
-package View;
+//package View;
+//
+//import Controller.ClienteController;
+//import Controller.ProdutoController;
+//import Dao.ConexaoBD;
+//import Dao.ProdutoDao;
+//import java.sql.Connection;
+//
+//import javax.swing.*;
+//import java.awt.*;
+//import java.util.ArrayList;
+//import java.util.List;
+//
+//public class MainApp {
+//
+//    private ClienteView clienteView;
+//    private MenuPrincipal menuPrincipal;
+//    private ProdutoView produtoView;
+//    private VendaView vendaView;
+//    private TrocaPontosView trocaPontosView;
+//    private Connection conexao;
+//    private ClienteController clienteController;
+//
+//    public MainApp() {
+//        menuPrincipal = new MenuPrincipal();
+//        menuPrincipal.setVisible(true);
 
-import Controller.ClienteController;
-import Controller.ProdutoController;
-import Dao.ConexaoBD;
-import Dao.ProdutoDao;
-import java.sql.Connection;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
-
-public class MainApp {
-
-    private ClienteView clienteView;
-    private MenuPrincipal menuPrincipal;
-    private ProdutoView produtoView;
-    private VendaView vendaView;
-    private TrocaPontosView trocaPontosView;
-    private Connection conexao;
-    private ProdutoController produtoController;
-    private ClienteController clienteController;
-
-    public MainApp() {
-        menuPrincipal = new MenuPrincipal(produtoController);
-        menuPrincipal.setVisible(true);
-
-        try {
-            // Conecta com o banco de dados
-            this.conexao = ConexaoBD.conectar();
-            //daos
-            ProdutoDao produtoDao = new ProdutoDao(conexao);
-            //controller;
-            this.produtoController = new ProdutoController(produtoDao);
-
-            this.produtoView = new ProdutoView(produtoController);
-
-
-        } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(null, "Erro na conexão com o banco: " + e.getMessage());
-            System.exit(1);
-        }
-
-    }
+//        try {
+//            // Conecta com o banco de dados
+//            this.conexao = ConexaoBD.conectar();
+//            //daos
+//            ProdutoDao produtoDao = new ProdutoDao(conexao);
+//            //controller;
+//            this.produtoController = new ProdutoController(produtoDao);
+//
+//            this.produtoView = new ProdutoView();
+//
+//
+//        } catch (RuntimeException e) {
+//            JOptionPane.showMessageDialog(null, "Erro na conexão com o banco: " + e.getMessage());
+//            System.exit(1);
+//        }
+//
+//    }
     //    public void voltarParaMenuPrincipal(JFrame telaAtual) {
 //        telaAtual.dispose();
 //        menuPrincipal.setVisible(true);
 //    }
 
-    public static void main(String[] args) {
-        new MainApp();
-    }
-}
+//    public static void main(String[] args) {
+//        new MainApp();
+//    }
+//}
 
 //}
 //        // Inicializa as telas

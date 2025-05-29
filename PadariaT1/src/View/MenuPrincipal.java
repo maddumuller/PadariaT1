@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.event.*;
 
 import Controller.VendaController;
+import Dao.ClienteDao;
 import Dao.ConexaoBD;
 import Dao.ProdutoDao;
 import java.sql.Connection;
@@ -23,8 +24,7 @@ public class MenuPrincipal extends JFrame {
     private ClienteController clienteController;
     private VendaController vendaController;
 
-    public MenuPrincipal(ProdutoController produtoController) {
-        this.produtoController = produtoController;
+    public MenuPrincipal() {;
         setTitle("Menu Principal - PadariaT1");
         setSize(450, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -33,9 +33,12 @@ public class MenuPrincipal extends JFrame {
         try {
             this.conexao = ConexaoBD.conectar();
             ProdutoDao produtoDao = new ProdutoDao(conexao);
+            ClienteDao clienteDao = new ClienteDao(conexao);
+            VendaController vendaDao = new VendaController(conexao);
             this.produtoController = new ProdutoController(produtoDao);
-            // inicialize seu ClienteController aqui, se necessário
-            // this.clienteController = new ClienteController(...);
+            this.clienteController = new ClienteController(conexao);
+            this.vendaController = new VendaController(conexao);
+
         } catch (RuntimeException e) {
             JOptionPane.showMessageDialog(this, "Erro na conexão com o banco: " + e.getMessage());
             System.exit(1);
@@ -101,8 +104,7 @@ public class MenuPrincipal extends JFrame {
     }
 
     public static void main(String[] args) {
-        ProdutoController produtoController = null;
-        MenuPrincipal menu = new MenuPrincipal(produtoController);
+        MenuPrincipal menu = new MenuPrincipal();
         menu.setVisible(true);
     }
 
