@@ -17,8 +17,8 @@ public class DatabaseInitializer {
                         "preco DECIMAL(10,2) NOT NULL," +
                         "tipo VARCHAR(50) NOT NULL," +
                         "quantidade_estoque INT NOT NULL DEFAULT 0," +
-                        "resgatavel BOOLEAN NOT NULL DEFAULT false" +
-                        "custo_pontos INT NOT NULL DEFAULT 0;"+
+                        "resgatavel BOOLEAN NOT NULL DEFAULT false," +
+                        "custo_pontos INT NOT NULL DEFAULT 0"+
                         ");";
 
 
@@ -29,8 +29,8 @@ public class DatabaseInitializer {
                         "id SERIAL PRIMARY KEY," +
                         "nome VARCHAR(100) NOT NULL," +
                         "CPF VARCHAR(14) NOT NULL UNIQUE," +
-                        "tELEFONE VARCHAR(15)," +
-                        "pontos INT NOT NULL DEFAULT 0," +
+                        "telefone VARCHAR(15)," +
+                        "pontos INT NOT NULL DEFAULT 0" +
                         ");";
 
                 stmt.executeUpdate(tabelaCliente);
