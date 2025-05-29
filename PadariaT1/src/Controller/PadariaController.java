@@ -14,14 +14,14 @@ public class PadariaController {
         this.padaria = new Padaria();
     }
 
-    public String cadastrarCliente(String nome, String cpf, String telefone) {
-        Cliente cliente = new Cliente(nome, cpf, telefone);
+    public String cadastrarCliente(String nome, String cpf, String telefone, int pontos) {
+        Cliente cliente = new Cliente(nome, cpf, telefone, pontos);
         padaria.getClientes().add(cliente);
         return "Cliente cadastrado com sucesso: " + nome;
     }
 
     public String cadastrarProduto(String nome, double preco, String tipo, int quantidadeEstoque, boolean resgatavel, int custoPontos) {
-        Produto produto = new Produto(nome, preco, tipo, quantidadeEstoque, resgatavel, custoPontos);
+        Produto produto = new Produto();
         padaria.getProdutos().add(produto);
         return "Produto cadastrado com sucesso: " + nome;
     }
@@ -39,7 +39,7 @@ public class PadariaController {
             }
         }
 
-        Venda venda = new Venda(cliente, produtosVenda);
+        Venda venda = new Venda(cliente);
         venda.registrarVenda(cliente, produtosVenda);
         padaria.getVendas().add(venda);
         return "Venda registrada com sucesso! Valor total: " + venda.getValorTotal();
@@ -102,4 +102,7 @@ public class PadariaController {
     public List<Venda> getVendas() {
         return padaria.getVendas();
     }
+
 }
+
+
