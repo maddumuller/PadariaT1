@@ -18,13 +18,15 @@ public class MenuPrincipal extends JFrame {
     private JButton vendaButton;
     private JButton sairButton;
     private Connection conexao;
+    private JButton trocaPontosButton;
     private ProdutoController produtoController;
     private ClienteController clienteController;
     private VendaController vendaController;
 
-    public MenuPrincipal() {
+    public MenuPrincipal(ProdutoController produtoController) {
+        this.produtoController = produtoController;
         setTitle("Menu Principal - PadariaT1");
-        setSize(400, 300);
+        setSize(450, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
 
@@ -51,8 +53,12 @@ public class MenuPrincipal extends JFrame {
         vendaButton.setBounds(100, 150, 200, 30);
         add(vendaButton);
 
+        trocaPontosButton = new JButton("Troca de pontos");
+        trocaPontosButton.setBounds(100, 200, 200, 30);
+        add(trocaPontosButton);
+
         sairButton = new JButton("Sair");
-        sairButton.setBounds(100, 200, 200, 30);
+        sairButton.setBounds(100, 250, 200, 30);
         add(sairButton);
 
         // Ações dos botões
@@ -63,6 +69,7 @@ public class MenuPrincipal extends JFrame {
             }
         });
 
+
         clienteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ClienteView clienteView = new ClienteView(); // <- construtor vazio
@@ -71,13 +78,7 @@ public class MenuPrincipal extends JFrame {
             }
         });
 
-        vendaButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Abrir tela de Venda...");
-                // VendaView vendaView = new VendaView();
-                // vendaView.setVisible(true);
-            }
-        });
+
         vendaButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(null, "Abrir tela de Venda...");
@@ -85,11 +86,25 @@ public class MenuPrincipal extends JFrame {
                  vendaView.setVisible(true);
             }
         });
+        trocaPontosButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                 TrocaPontosView trocaPontosView = new TrocaPontosView();
+                trocaPontosView.setVisible(true);
+            }
+        });
+        sairButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
 
     }
 
     public static void main(String[] args) {
-        new MenuPrincipal().setVisible(true);
+        ProdutoController produtoController = null;
+        MenuPrincipal menu = new MenuPrincipal(produtoController);
+        menu.setVisible(true);
     }
+
 }
 
