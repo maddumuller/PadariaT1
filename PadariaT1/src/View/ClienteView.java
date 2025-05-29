@@ -1,96 +1,178 @@
 package View;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import Controller.ClienteController;
-import Controller.ProdutoController;
+import Model.Cliente;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.List;
 
 public class ClienteView extends JFrame {
-    private MenuPrincipal menuPrincipal;
     private JTextField nomeField, cpfField, telefoneField, pontosField;
-    private JButton salvarButton, limparButton, voltarButton;
+    private JButton salvarButton, atualizarButton, deletarButton, limparButton, voltarButton;
+    private JTable tabela;
+    private DefaultTableModel tabelaModelo;
     private ClienteController controller;
+    private int idSelecionado = -1;
 
-    // Construtor que recebe a tela principal
-    public ClienteView() {
-
+    public ClienteView(ClienteController controller) {
+        this.controller = controller;
 
         setTitle("Cadastro de Cliente");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 350);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setSize(700, 500);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
 
         // Painel de formulário
-        JPanel formPanel = new JPanel(new GridLayout(8, 2, 10, 10));
-        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+        JPanel formPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+        formPanel.setBorder(BorderFactory.createTitledBorder("Dados do Cliente"));
+
+        nomeField = new JTextField();
+        cpfField = new JTextField();
+        telefoneField = new JTextField();
+        pontosField = new JTextField("0");
+        pontosField.setEditable(false);
 
         formPanel.add(new JLabel("Nome:"));
-        nomeField = new JTextField();
         formPanel.add(nomeField);
 
         formPanel.add(new JLabel("CPF:"));
-        cpfField = new JTextField();
         formPanel.add(cpfField);
 
         formPanel.add(new JLabel("Telefone:"));
-        telefoneField = new JTextField();
         formPanel.add(telefoneField);
 
         formPanel.add(new JLabel("Total de Pontos:"));
-        pontosField = new JTextField("0");
-        pontosField.setEditable(false);
         formPanel.add(pontosField);
 
-        add(formPanel, BorderLayout.CENTER);
-
-        // Painel de botões
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        salvarButton = new JButton("Salvar");
+        // Botões de ação
+        salvarButton = new JButton("Cadastrar");
+        atualizarButton = new JButton("Atualizar");
+        deletarButton = new JButton("Excluir");
         limparButton = new JButton("Limpar");
         voltarButton = new JButton("Voltar");
 
-        buttonPanel.add(salvarButton);
-        buttonPanel.add(limparButton);
-        buttonPanel.add(voltarButton);
+        JPanel botoesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        botoesPanel.add(salvarButton);
+        botoesPanel.add(atualizarButton);
+        botoesPanel.add(deletarButton);
+        botoesPanel.add(limparButton);
+        botoesPanel.add(voltarButton);
 
-        add(buttonPanel, BorderLayout.SOUTH);
-
-        // Ação do botão Salvar
-        salvarButton.addActionListener(new ActionListener() {
+        // Tabela
+        tabelaModelo = new DefaultTableModel(new String[]{"ID", "Nome", "CPF", "Telefone", "Pontos"}, 0) {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    String nome = nomeField.getText();
-                    String cpf = cpfField.getText();
-                    String telefone = telefoneField.getText();
-                    int pontos = Integer.parseInt(pontosField.getText());
+            public boolean isCellEditable(int row, int column) {
+                return false; // tabela não editável diretamente
+            }
+        };
+        tabela = new JTable(tabelaModelo);
+        JScrollPane scrollPane = new JScrollPane(tabela);
 
-                    if (controller != null) {
-                        controller.cadastrarCliente(nome, cpf, telefone, pontos);
-                        JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
-                    }
+        // Adiciona componentes ao frame
+        add(formPanel, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
+        add(botoesPanel, BorderLayout.SOUTH);
 
-                    limparCampos();
+        carregarClientes();
 
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(null, "Erro ao cadastrar: " + ex.getMessage());
+        // Eventos dos botões
+        salvarButton.addActionListener(e -> cadastrarCliente());
+        atualizarButton.addActionListener(e -> atualizarCliente());
+        deletarButton.addActionListener(e -> deletarCliente());
+        limparButton.addActionListener(e -> limparCampos());
+        voltarButton.addActionListener(e -> voltarParaMenuPrincipal());
+
+        // Clique na tabela carrega dados no formulário
+        tabela.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                int linha = tabela.getSelectedRow();
+                if (linha != -1) {
+                    idSelecionado = (int) tabelaModelo.getValueAt(linha, 0);
+                    nomeField.setText((String) tabelaModelo.getValueAt(linha, 1));
+                    cpfField.setText((String) tabelaModelo.getValueAt(linha, 2));
+                    telefoneField.setText((String) tabelaModelo.getValueAt(linha, 3));
+                    pontosField.setText(String.valueOf(tabelaModelo.getValueAt(linha, 4)));
                 }
             }
         });
-
-        // Ação do botão Limpar
-        limparButton.addActionListener(e -> limparCampos());
-
-        // Ação do botão Voltar
-        voltarButton.addActionListener(e -> voltarParaMenuPrincipal());
     }
 
-    private void voltarParaMenuPrincipal() {
-            menuPrincipal.setVisible(true);
-            dispose();
+    private void cadastrarCliente() {
+        try {
+            controller.cadastrarCliente(
+                    nomeField.getText(),
+                    cpfField.getText(),
+                    telefoneField.getText(),
+                    0 // novos clientes começam com 0 pontos
+            );
+            JOptionPane.showMessageDialog(this, "Cliente cadastrado com sucesso!");
+            limparCampos();
+            carregarClientes();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erro ao cadastrar: " + ex.getMessage());
+        }
+    }
+
+    private void atualizarCliente() {
+        try {
+            String nome = nomeField.getText();
+            String cpf = cpfField.getText();
+            String telefone = telefoneField.getText();
+            int pontos = Integer.parseInt(pontosField.getText());
+
+            int id = controller.buscarIdPorCpf(cpf);
+            if (id == -1) {
+                JOptionPane.showMessageDialog(this, "Cliente não encontrado para atualizar.");
+                return;
+            }
+
+            Cliente cliente = new Cliente(id, nome, cpf, telefone, pontos);
+            String resposta = controller.atualizarCliente(cliente);
+            JOptionPane.showMessageDialog(this, resposta);
+            limparCampos();
+            carregarClientes();  // Atualiza a tabela
+        } catch (NumberFormatException nfe) {
+            JOptionPane.showMessageDialog(this, "Pontos inválidos.");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erro ao atualizar cliente: " + ex.getMessage());
+        }
+    }
+
+
+    private void deletarCliente() {
+        if (idSelecionado == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um cliente para excluir.");
+            return;
+        }
+        int confirm = JOptionPane.showConfirmDialog(this, "Deseja realmente excluir este cliente?", "Confirmar exclusão", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                controller.deletarCliente(idSelecionado);
+                JOptionPane.showMessageDialog(this, "Cliente excluído com sucesso!");
+                limparCampos();
+                carregarClientes();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao excluir: " + ex.getMessage());
+            }
+        }
+    }
+
+    private void carregarClientes() {
+        try {
+            List<Cliente> clientes = controller.listarClientes();
+            tabelaModelo.setRowCount(0);
+            for (Cliente c : clientes) {
+                tabelaModelo.addRow(new Object[]{
+                        c.getId(), c.getNome(), c.getCpf(), c.getTelefone(), c.getPontos()
+                });
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erro ao carregar clientes: " + e.getMessage());
+        }
     }
 
     private void limparCampos() {
@@ -98,10 +180,12 @@ public class ClienteView extends JFrame {
         cpfField.setText("");
         telefoneField.setText("");
         pontosField.setText("0");
+        idSelecionado = -1;
+        tabela.clearSelection();
     }
 
-    public void setController(ClienteController controller) {
-        this.controller = controller;
+    private void voltarParaMenuPrincipal() {
+        dispose();
+        new MenuPrincipal().setVisible(true);
     }
 }
-

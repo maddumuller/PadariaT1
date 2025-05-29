@@ -69,15 +69,16 @@ public class MenuPrincipal extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 ProdutoView produtoView = new ProdutoView(produtoController);
                 produtoView.setVisible(true);
+                dispose();
             }
         });
 
 
         clienteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ClienteView clienteView = new ClienteView(); // <- construtor vazio
-                clienteView.setController(clienteController); // <- associa o controller (opcional)
+                ClienteView clienteView = new ClienteView(clienteController);
                 clienteView.setVisible(true);
+                dispose();
             }
         });
 
